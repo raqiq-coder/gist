@@ -76,17 +76,16 @@ func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *url.URL) (*Article, er
 	}
 
 	clone := goquery.CloneDocument(doc)
-
-	body := clone.Find("body")
-	if body.Contents().Length() == 0 {
-		return nil, fmt.Errorf("failed to find document body")
-	}
-
 	article := &Article{
-		body: body,
+		doc:     clone.Selection,
+		baseURL: baseURL,
 	}
 
-	article.extractArticleContent(baseURL)
+	article.getMeta()
+
+	if err := article.getArticle(); err != nil {
+		return nil, fmt.Errorf("failed to get article: %w", err)
+	}
 
 	return article, nil
 }
