@@ -32,22 +32,22 @@ var ogSelectors = map[string]string{
 	publisher:   "site_name",
 }
 
-func (a *Article) getOgTags() *meta {
+func ogTags(node *goquery.Selection) *meta {
 	m := &meta{}
 
 	for k, v := range ogSelectors {
 		sel := fmt.Sprintf("meta[property='og:%s']", v)
 
-		a.doc.Find(sel).Each(func(i int, s *goquery.Selection) {
+		node.Find(sel).Each(func(i int, s *goquery.Selection) {
 			val := s.AttrOr("content", "")
 			m.setMetaField(k, val)
 		})
 	}
 
-	authorVal := a.doc.Find("meta[property='article:author']").AttrOr("content", "")
+	authorVal := node.Find("meta[property='article:author']").AttrOr("content", "")
 	m.setMetaField(author, authorVal)
 
-	publishedAtVal := a.doc.Find("meta[property='article:published_time']").AttrOr("content", "")
+	publishedAtVal := node.Find("meta[property='article:published_time']").AttrOr("content", "")
 	m.setMetaField(publishedAt, publishedAtVal)
 
 	return m
@@ -61,13 +61,13 @@ var twitterSelectors = map[string]string{
 	creator:     "creator",
 }
 
-func (a *Article) getTwitterTags() *meta {
+func twitterTags(node *goquery.Selection) *meta {
 	m := &meta{}
 
 	for k, v := range twitterSelectors {
 		sel := fmt.Sprintf("meta[name='twitter:%s']", v)
 
-		a.doc.Find(sel).Each(func(i int, s *goquery.Selection) {
+		node.Find(sel).Each(func(i int, s *goquery.Selection) {
 			val := s.AttrOr("content", "")
 			m.setMetaField(k, val)
 		})
@@ -76,16 +76,16 @@ func (a *Article) getTwitterTags() *meta {
 	return m
 }
 
-func (a *Article) getMetaHTML() *meta {
+func metaHTML(node *goquery.Selection) *meta {
 	m := &meta{}
 
-	authorVal := a.doc.Find("meta[name='author']").AttrOr("content", "")
+	authorVal := node.Find("meta[name='author']").AttrOr("content", "")
 	m.setMetaField(author, authorVal)
 
-	descVal := a.doc.Find("meta[name='description']").AttrOr("content", "")
+	descVal := node.Find("meta[name='description']").AttrOr("content", "")
 	m.setMetaField(description, descVal)
 
-	titleVal := a.doc.Find("html title").Text()
+	titleVal := node.Find("html title").Text()
 	m.setMetaField(title, titleVal)
 
 	return m

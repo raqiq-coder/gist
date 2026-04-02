@@ -6,7 +6,6 @@ import (
 	"slices"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -14,23 +13,11 @@ import (
 var tagsToRemove = []string{"script", "noscript", "style", "iframe", "button", "br", "footer", "aside", "header", "nav", "details", "figcaption", "input", "textarea"}
 var containerTags = []string{"div", "article", "section", "main", "p"}
 
-type Article struct {
-	Title       string
-	Description string
-	Author      string
-	PublishedAt *time.Time
-	Poster      string
-	Favicon     string
-	Lang        string
-	SourceURL   *nurl.URL
-	Publisher   string
-	Content     *goquery.Document
-	TextContent string
-	Length      int
-	Images      []*ImgMeta
-
-	doc     *goquery.Selection
-	baseURL *nurl.URL
+type content struct {
+	images []*ImgMeta
+	html   *goquery.Document
+	text   string
+	len    int
 }
 
 type ImgMeta struct {
@@ -38,41 +25,43 @@ type ImgMeta struct {
 	Alt string
 }
 
-func (a *Article) getArticle() error {
-	body := a.doc.Find("body")
+func (p *Parser) extractContent() (*content, error) {
+	body := p.doc.Find("body")
 	if body.Contents().Length() == 0 {
-		return fmt.Errorf("failed to find document body")
+		return nil, fmt.Errorf("failed to find document body")
 	}
 
-	a.doc = body
+	p.doc = body
 
-	a.preProcessing()
+	p.preProcessing()
 
-	best := getBestCandidate(a.doc)
-	a.doc = best.s
+	best := getBestCandidate(p.doc)
+	p.doc = best.s
 
-	a.postProcessing()
-	a.fixImageSources()
+	p.postProcessing()
+	fixImageSources(p.doc, p.baseURL)
 
-	doc := goquery.NewDocumentFromNode(a.doc.Get(0))
+	c := &content{}
+
+	doc := goquery.NewDocumentFromNode(p.doc.Get(0))
 	if doc.Length() > 0 {
-		a.extractImages()
-		a.Content = doc
-		a.TextContent = best.s.Text()
-		a.Length = len(best.s.Text())
+		c.images = p.extractImages()
+		c.html = doc
+		c.text = best.s.Text()
+		c.len = len(best.s.Text())
 	}
 
-	return nil
+	return c, nil
 }
 
-func (a *Article) preProcessing() {
-	a.doc.Find("*").RemoveAttr("style")
+func (p *Parser) preProcessing() {
+	p.doc.Find("*").RemoveAttr("style")
 
 	selector := strings.Join(tagsToRemove, ",")
-	a.doc.Find(selector).Remove()
+	p.doc.Find(selector).Remove()
 
-	unwrapTags(a.doc, "figure", "picture")
-	removeEmptyTags(a.doc)
+	unwrapTags(p.doc, "figure", "picture")
+	removeEmptyTags(p.doc)
 }
 
 type candidate struct {
@@ -162,8 +151,8 @@ func calcScore(s *goquery.Selection) float64 {
 	return score
 }
 
-func (a *Article) postProcessing() {
-	s := a.doc
+func (p *Parser) postProcessing() {
+	s := p.doc
 
 	s.Find("h4 + a[href*='.com']").Remove()
 	s.Find("a").Each(func(i int, a *goquery.Selection) {
@@ -266,7 +255,7 @@ func (a *Article) postProcessing() {
 	s.SetHtml(cleanHtml)
 }
 
-func (a *Article) fixImageSources() {
+func fixImageSources(node *goquery.Selection, baseURL *nurl.URL) {
 	attrsToRemove := []string{
 		"srcset",
 		"sizes",
@@ -279,7 +268,7 @@ func (a *Article) fixImageSources() {
 		"height",
 	}
 
-	a.doc.Find("img").Each(func(i int, img *goquery.Selection) {
+	node.Find("img").Each(func(i int, img *goquery.Selection) {
 		for _, attr := range attrsToRemove {
 			img.RemoveAttr(attr)
 		}
@@ -307,7 +296,7 @@ func (a *Article) fixImageSources() {
 				}
 			}
 		} else {
-			fullSrc = fixLocalImg(src, a.baseURL)
+			fullSrc = fixLocalImg(src, baseURL)
 		}
 
 		if fullSrc != "" {
@@ -318,10 +307,11 @@ func (a *Article) fixImageSources() {
 	})
 }
 
-func (a *Article) extractImages() {
+func (p *Parser) extractImages() []*ImgMeta {
 	seen := map[string]any{}
+	imgs := []*ImgMeta{}
 
-	a.doc.Find("img").Each(func(i int, s *goquery.Selection) {
+	p.doc.Find("img").Each(func(i int, s *goquery.Selection) {
 		src, found := s.Attr("src")
 		if !found || src == "" {
 			return
@@ -330,18 +320,14 @@ func (a *Article) extractImages() {
 		if _, ok := seen[src]; !ok {
 			seen[src] = struct{}{}
 
-			a.Images = append(a.Images, &ImgMeta{
+			imgs = append(imgs, &ImgMeta{
 				Src: src,
 				Alt: s.AttrOr("alt", ""),
 			})
 		}
 	})
-}
 
-func getClassID(s *goquery.Selection) string {
-	class := s.AttrOr("class", "")
-	id := s.AttrOr("id", "")
-	return strings.ToLower(class + " " + id)
+	return imgs
 }
 
 func (a *Article) PrintMeta() {

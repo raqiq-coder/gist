@@ -7,10 +7,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func (a *Article) getJsonLD() *meta {
+func jsonLD(node *goquery.Selection) *meta {
 	meta := &meta{}
 
-	a.doc.Find(`script[type="application/ld+json"]`).Each(func(i int, s *goquery.Selection) {
+	node.Find(`script[type="application/ld+json"]`).Each(func(i int, s *goquery.Selection) {
 		content := rxCDATA.ReplaceAllString(s.Text(), "")
 
 		var parsed map[string]any

@@ -132,3 +132,9 @@ func fixLocalImg(relativePath string, base *nurl.URL) string {
 func hasSymbol(str string) bool {
 	return strings.ContainsAny(str, "!#$%^&*()_+{}[]")
 }
+
+func getClassID(s *goquery.Selection) string {
+	class := s.AttrOr("class", "")
+	id := s.AttrOr("id", "")
+	return strings.ToLower(class + " " + id)
+}

@@ -16,60 +16,69 @@ type meta struct {
 	favicon     string
 	sourceURL   *nurl.URL
 	publisher   string
+	lang        string
 }
 
-func (a *Article) getMeta() {
-	sources := []*meta{
-		a.getJsonLD(),
-		a.getOgTags(),
-		a.getTwitterTags(),
-		a.getMetaHTML(),
-	}
+func (p *Parser) extractMeta() *meta {
+	m := &meta{}
 
-	a.getLang()
-	a.getFavicon()
-	a.getOriginURL()
+	sources := []*meta{
+		jsonLD(p.doc),
+		ogTags(p.doc),
+		twitterTags(p.doc),
+		metaHTML(p.doc),
+	}
 
 	for _, s := range sources {
-		metaEquals(&a.Author, s.author)
-		metaEquals(&a.Title, s.title)
-		metaEquals(&a.Description, s.description)
-		metaEquals(&a.Favicon, s.favicon)
-		metaEquals(&a.Poster, s.poster)
-		metaEquals(&a.PublishedAt, s.publishedAt)
-		metaEquals(&a.Publisher, s.publisher)
-		metaEquals(&a.SourceURL, s.sourceURL)
+		metaEquals(&m.author, s.author)
+		metaEquals(&m.title, s.title)
+		metaEquals(&m.description, s.description)
+		metaEquals(&m.favicon, s.favicon)
+		metaEquals(&m.poster, s.poster)
+		metaEquals(&m.publishedAt, s.publishedAt)
+		metaEquals(&m.publisher, s.publisher)
 	}
 
+	m.lang = p.lang()
+	m.favicon = p.favicon()
+	m.sourceURL = p.originURL()
+
+	return m
 }
 
-func (a *Article) getLang() {
-	a.Lang = a.doc.Find("html").AttrOr("lang", "")
+func (p *Parser) lang() string {
+	return p.doc.Find("html").AttrOr("lang", "")
 }
 
-func (a *Article) getFavicon() {
-	a.doc.Find("link[rel*='icon']").Each(func(i int, s *goquery.Selection) {
+func (p *Parser) favicon() string {
+	icon := ""
+	p.doc.Find("link[rel*='icon']").Each(func(i int, s *goquery.Selection) {
 		href := s.AttrOr("href", "")
 
-		fixed := fixLocalImg(href, a.baseURL)
+		fixed := fixLocalImg(href, p.baseURL)
 		if href != "" && checkImg(fixed) {
-			a.Favicon = fixed
+			icon = fixed
 			return
 		}
 	})
+
+	return icon
 }
 
-func (a *Article) getOriginURL() {
-	a.doc.Find("link[rel='canonical']").Each(func(i int, s *goquery.Selection) {
+func (p *Parser) originURL() *nurl.URL {
+	var url *nurl.URL
+	p.doc.Find("link[rel='canonical']").Each(func(i int, s *goquery.Selection) {
 		href := s.AttrOr("href", "")
 
 		parsed, err := nurl.Parse(href)
 		if rxURL.MatchString(href) && err == nil {
-			a.SourceURL = parsed
+			url = parsed
 		} else {
-			a.SourceURL = a.baseURL
+			url = p.baseURL
 		}
 	})
+
+	return url
 }
 
 func metaEquals[T comparable](t *T, v T) {

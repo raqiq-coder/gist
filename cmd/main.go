@@ -9,7 +9,6 @@ import (
 )
 
 const url = "https://habr.com/ru/companies/X5Tech/articles/1001330/"
-
 // const url = "https://habr.com/ru/articles/1015700/"
 // const url = "https://dev.to/ghostbuild/your-agent-can-think-it-cant-remember-5e1o"
 // const url = "https://dev.to/allenarduino/creating-a-fully-functional-contact-form-with-react-and-formgrid-api-499m"
@@ -38,7 +37,19 @@ func main() {
 		fmt.Printf("ERROR: %v", err)
 	}
 
-	article.PrintMeta()
+	// article.PrintMeta()
 
-	// fmt.Println(article.Content.Html())
+	fmt.Println(article.HTML.Html())
 }
+
+
+
+
+
+/*
+
+Parser -> Article - meta + content
+  |
+baseURL + doc + extractMeta + extractArticle
+
+*/
