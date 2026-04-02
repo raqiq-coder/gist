@@ -5,12 +5,12 @@ import (
 
 	nurl "net/url"
 
-	parser "github.com/raqiq-coder/articles-parser"
+	"github.com/raqiq-coder/gist"
 )
 
-const url = "https://habr.com/ru/companies/X5Tech/articles/1001330/"
+// const url = "https://habr.com/ru/companies/X5Tech/articles/1001330/"
 // const url = "https://habr.com/ru/articles/1015700/"
-// const url = "https://dev.to/ghostbuild/your-agent-can-think-it-cant-remember-5e1o"
+const url = "https://dev.to/ghostbuild/your-agent-can-think-it-cant-remember-5e1o"
 // const url = "https://dev.to/allenarduino/creating-a-fully-functional-contact-form-with-react-and-formgrid-api-499m"
 // const url = "https://vc.ru/ai/2835703-qwen3-5-9b-uncensored-reviz-neironki-bez-tsenzury"
 // const url = "https://vc.ru/aviasales/2755911-statistika-puteshestviy-aviasales"
@@ -31,20 +31,16 @@ func main() {
 		fmt.Printf("ERROR: %v", err)
 	}
 
-	parser := parser.NewParser(nil)
+	parser := gist.NewParser(nil)
 	article, err := parser.Parse(parsed)
 	if err != nil {
 		fmt.Printf("ERROR: %v", err)
 	}
 
-	// article.PrintMeta()
+	article.PrintMeta()
 
-	fmt.Println(article.HTML.Html())
+	// fmt.Println(article.HTML.Html())
 }
-
-
-
-
 
 /*
 

@@ -1,4 +1,4 @@
-package parser
+package body
 
 import (
 	"fmt"
@@ -13,55 +13,55 @@ import (
 var tagsToRemove = []string{"script", "noscript", "style", "iframe", "button", "br", "footer", "aside", "header", "nav", "details", "figcaption", "input", "textarea"}
 var containerTags = []string{"div", "article", "section", "main", "p"}
 
-type content struct {
-	images []*ImgMeta
-	html   *goquery.Document
-	text   string
-	len    int
+type Body struct {
+	Images []*Img
+	HTML   *goquery.Document
+	Text   string
+	Len    int
 }
 
-type ImgMeta struct {
+type Img struct {
 	Src string
 	Alt string
 }
 
-func (p *Parser) extractContent() (*content, error) {
-	body := p.doc.Find("body")
+func Extract(node *goquery.Document, baseURL *nurl.URL) (*Body, error) {
+	clone := goquery.CloneDocument(node)
+	body := clone.Find("body")
 	if body.Contents().Length() == 0 {
 		return nil, fmt.Errorf("failed to find document body")
 	}
 
-	p.doc = body
+	// p.doc = body
 
-	p.preProcessing()
+	preProcess(body)
 
-	best := getBestCandidate(p.doc)
-	p.doc = best.s
+	best := getBestCandidate(body)
 
-	p.postProcessing()
-	fixImageSources(p.doc, p.baseURL)
+	postProcessing(best.s)
+	fixImageSources(best.s, baseURL)
 
-	c := &content{}
+	b := &Body{}
 
-	doc := goquery.NewDocumentFromNode(p.doc.Get(0))
+	doc := goquery.NewDocumentFromNode(best.s.Get(0))
 	if doc.Length() > 0 {
-		c.images = p.extractImages()
-		c.html = doc
-		c.text = best.s.Text()
-		c.len = len(best.s.Text())
+		b.Images = extractImages(best.s)
+		b.HTML = doc
+		b.Text = best.s.Text()
+		b.Len = len(best.s.Text())
 	}
 
-	return c, nil
+	return b, nil
 }
 
-func (p *Parser) preProcessing() {
-	p.doc.Find("*").RemoveAttr("style")
+func preProcess(node *goquery.Selection) {
+	node.Find("*").RemoveAttr("style")
 
 	selector := strings.Join(tagsToRemove, ",")
-	p.doc.Find(selector).Remove()
+	node.Find(selector).Remove()
 
-	unwrapTags(p.doc, "figure", "picture")
-	removeEmptyTags(p.doc)
+	unwrapTags(node, "figure", "picture")
+	removeEmptyTags(node)
 }
 
 type candidate struct {
@@ -151,9 +151,7 @@ func calcScore(s *goquery.Selection) float64 {
 	return score
 }
 
-func (p *Parser) postProcessing() {
-	s := p.doc
-
+func postProcessing(s *goquery.Selection) {
 	s.Find("h4 + a[href*='.com']").Remove()
 	s.Find("a").Each(func(i int, a *goquery.Selection) {
 		href := a.AttrOr("href", "")
@@ -307,11 +305,11 @@ func fixImageSources(node *goquery.Selection, baseURL *nurl.URL) {
 	})
 }
 
-func (p *Parser) extractImages() []*ImgMeta {
+func extractImages(node *goquery.Selection) []*Img {
 	seen := map[string]any{}
-	imgs := []*ImgMeta{}
+	imgs := []*Img{}
 
-	p.doc.Find("img").Each(func(i int, s *goquery.Selection) {
+	node.Find("img").Each(func(i int, s *goquery.Selection) {
 		src, found := s.Attr("src")
 		if !found || src == "" {
 			return
@@ -320,7 +318,7 @@ func (p *Parser) extractImages() []*ImgMeta {
 		if _, ok := seen[src]; !ok {
 			seen[src] = struct{}{}
 
-			imgs = append(imgs, &ImgMeta{
+			imgs = append(imgs, &Img{
 				Src: src,
 				Alt: s.AttrOr("alt", ""),
 			})
@@ -328,16 +326,4 @@ func (p *Parser) extractImages() []*ImgMeta {
 	})
 
 	return imgs
-}
-
-func (a *Article) PrintMeta() {
-	fmt.Println("OriginURL: ", a.SourceURL)
-	fmt.Println("Author: ", a.Author)
-	fmt.Println("Title: ", a.Title)
-	fmt.Println("Description: ", a.Description)
-	fmt.Println("Poster: ", a.Poster)
-	fmt.Println("PublishedAt: ", a.PublishedAt)
-	fmt.Println("Publisher: ", a.Publisher)
-	fmt.Println("Favicon: ", a.Favicon)
-	fmt.Println("Languange: ", a.Lang)
 }

@@ -1,4 +1,4 @@
-package parser
+package meta
 
 import (
 	"encoding/json"
@@ -7,8 +7,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func jsonLD(node *goquery.Selection) *meta {
-	meta := &meta{}
+func jsonLD(node *goquery.Selection) *Meta {
+	meta := &Meta{}
 
 	node.Find(`script[type="application/ld+json"]`).Each(func(i int, s *goquery.Selection) {
 		content := rxCDATA.ReplaceAllString(s.Text(), "")
@@ -49,12 +49,12 @@ func jsonLD(node *goquery.Selection) *meta {
 			return
 		}
 
-		meta.title = getLdString(parsed["headline"])
-		meta.description = getLdString(parsed["description"])
-		meta.author = getLdPerson(parsed["author"])
-		meta.publisher = getLdPerson(parsed["publisher"])
-		meta.poster = getLdImage(parsed["image"])
-		meta.publishedAt = getLdPublishedAt(parsed["datePublished"])
+		meta.Title = getLdString(parsed["headline"])
+		meta.Description = getLdString(parsed["description"])
+		meta.Author = getLdPerson(parsed["author"])
+		meta.Publisher = getLdPerson(parsed["publisher"])
+		meta.Poster = getLdImage(parsed["image"])
+		meta.PublishedAt = getLdPublishedAt(parsed["datePublished"])
 	})
 
 	return meta

@@ -1,4 +1,4 @@
-package parser
+package meta
 
 import (
 	"fmt"
@@ -32,8 +32,8 @@ var ogSelectors = map[string]string{
 	publisher:   "site_name",
 }
 
-func ogTags(node *goquery.Selection) *meta {
-	m := &meta{}
+func ogTags(node *goquery.Selection) *Meta {
+	m := &Meta{}
 
 	for k, v := range ogSelectors {
 		sel := fmt.Sprintf("meta[property='og:%s']", v)
@@ -61,8 +61,8 @@ var twitterSelectors = map[string]string{
 	creator:     "creator",
 }
 
-func twitterTags(node *goquery.Selection) *meta {
-	m := &meta{}
+func twitterTags(node *goquery.Selection) *Meta {
+	m := &Meta{}
 
 	for k, v := range twitterSelectors {
 		sel := fmt.Sprintf("meta[name='twitter:%s']", v)
@@ -76,8 +76,8 @@ func twitterTags(node *goquery.Selection) *meta {
 	return m
 }
 
-func metaHTML(node *goquery.Selection) *meta {
-	m := &meta{}
+func metaHTML(node *goquery.Selection) *Meta {
+	m := &Meta{}
 
 	authorVal := node.Find("meta[name='author']").AttrOr("content", "")
 	m.setMetaField(author, authorVal)
@@ -91,32 +91,32 @@ func metaHTML(node *goquery.Selection) *meta {
 	return m
 }
 
-func (m *meta) setMetaField(tagType string, val string) {
+func (m *Meta) setMetaField(tagType string, val string) {
 	switch tagType {
 	case title:
-		m.title = val
+		m.Title = val
 	case description:
-		m.description = val
+		m.Description = val
 	case poster:
-		m.poster = val
+		m.Poster = val
 	case publisher:
-		m.publisher = val
+		m.Publisher = val
 	case site:
-		m.publisher = val
+		m.Publisher = val
 	case author:
-		m.author = val
+		m.Author = val
 	case creator:
-		m.author = val
+		m.Author = val
 	case sourceURL:
 		parsed, err := nurl.Parse(val)
 		if err == nil {
-			m.sourceURL = parsed
+			m.SourceURL = parsed
 		}
 	case publishedAt:
 		if val != "" {
 			parsed, err := time.Parse(time.RFC3339, val)
 			if err == nil {
-				m.publishedAt = &parsed
+				m.PublishedAt = &parsed
 			}
 		}
 	}

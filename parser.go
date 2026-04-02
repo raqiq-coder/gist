@@ -1,4 +1,4 @@
-package parser
+package gist
 
 import (
 	"fmt"
@@ -7,13 +7,12 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/raqiq-coder/gist/body"
+	"github.com/raqiq-coder/gist/meta"
 )
 
 type Parser struct {
 	cfg *ParserCfg
-
-	doc     *goquery.Selection
-	baseURL *nurl.URL
 }
 
 type ParserCfg struct {
@@ -81,7 +80,7 @@ type Article struct {
 	HTML        *goquery.Document
 	Text        string
 	Length      int
-	Images      []*ImgMeta
+	Images      []*body.Img
 }
 
 func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *nurl.URL) (*Article, error) {
@@ -91,28 +90,37 @@ func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *nurl.URL) (*Article, e
 
 	clone := goquery.CloneDocument(doc)
 
-	p.baseURL = baseURL
-	p.doc = clone.Selection
-
-	meta := p.extractMeta()
-	con, err := p.extractContent()
+	meta := meta.Extract(clone.Selection, baseURL)
+	body, err := body.Extract(clone, baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get article: %w", err)
 	}
 
 	return &Article{
-		Title:       meta.title,
-		Description: meta.description,
-		Author:      meta.author,
-		PublishedAt: meta.publishedAt,
-		Poster:      meta.poster,
-		Favicon:     meta.favicon,
-		Lang:        meta.lang,
-		SourceURL:   meta.sourceURL,
-		Publisher:   meta.publisher,
-		HTML:        con.html,
-		Text:        con.text,
-		Length:      con.len,
-		Images:      con.images,
+		Title:       meta.Title,
+		Description: meta.Description,
+		Author:      meta.Author,
+		PublishedAt: meta.PublishedAt,
+		Poster:      meta.Poster,
+		Favicon:     meta.Favicon,
+		Lang:        meta.Lang,
+		SourceURL:   meta.SourceURL,
+		Publisher:   meta.Publisher,
+		HTML:        body.HTML,
+		Text:        body.Text,
+		Length:      body.Len,
+		Images:      body.Images,
 	}, nil
+}
+
+func (a *Article) PrintMeta() {
+	fmt.Println("OriginURL: ", a.SourceURL)
+	fmt.Println("Author: ", a.Author)
+	fmt.Println("Title: ", a.Title)
+	fmt.Println("Description: ", a.Description)
+	fmt.Println("Poster: ", a.Poster)
+	fmt.Println("PublishedAt: ", a.PublishedAt)
+	fmt.Println("Publisher: ", a.Publisher)
+	fmt.Println("Favicon: ", a.Favicon)
+	fmt.Println("Languange: ", a.Lang)
 }

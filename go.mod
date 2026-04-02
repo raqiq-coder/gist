@@ -1,4 +1,4 @@
-module github.com/raqiq-coder/articles-parser
+module github.com/raqiq-coder/gist
 
 go 1.26.1
 
