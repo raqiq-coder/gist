@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"net/url"
 	nurl "net/url"
 	"slices"
 	"sort"
@@ -23,7 +22,7 @@ type Article struct {
 	Poster      string
 	Favicon     string
 	Lang        string
-	SourceURL   *url.URL
+	SourceURL   *nurl.URL
 	Publisher   string
 	Content     *goquery.Document
 	TextContent string
@@ -178,8 +177,8 @@ func (a *Article) postProcessing() {
 			a.Remove()
 		}
 
-		parsed,_ := url.Parse(href)
-		if !parsed.IsAbs(){
+		parsed, _ := nurl.Parse(href)
+		if !parsed.IsAbs() {
 			unwrapSelection(a)
 		}
 	})
@@ -232,7 +231,6 @@ func (a *Article) postProcessing() {
 		}
 	})
 
-	// Остановился здесь
 	s.Find("a, div").Each(func(i int, a *goquery.Selection) {
 		contents := a.Contents()
 		if contents.Length() == 1 {

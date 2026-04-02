@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 	"net/http"
-	"net/url"
+	nurl "net/url"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -33,10 +33,9 @@ func NewParser(cfg *ParserCfg) *Parser {
 			UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 		},
 	}
-
 }
 
-func (p *Parser) Parse(url *url.URL) (*Article, error) {
+func (p *Parser) Parse(url *nurl.URL) (*Article, error) {
 	if url == nil {
 		return nil, fmt.Errorf("invalid URL")
 	}
@@ -70,7 +69,7 @@ func (p *Parser) Parse(url *url.URL) (*Article, error) {
 	return article, nil
 }
 
-func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *url.URL) (*Article, error) {
+func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *nurl.URL) (*Article, error) {
 	if p.cfg.MaxItemsLen > 0 && doc.Length() > p.cfg.MaxItemsLen {
 		return nil, fmt.Errorf("document is very big")
 	}

@@ -2,7 +2,7 @@ package parser
 
 import (
 	"net/http"
-	"net/url"
+	nurl "net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -86,7 +86,7 @@ func removeSpace(html string) string {
 }
 
 func checkImg(img string) bool {
-	parsed, err := url.Parse(img)
+	parsed, err := nurl.Parse(img)
 	if err != nil {
 		return false
 	}
@@ -118,7 +118,7 @@ func checkImg(img string) bool {
 	return isSuccess && strings.HasPrefix(contentType, "image/")
 }
 
-func fixLocalImg(relativePath string, base *url.URL) string {
+func fixLocalImg(relativePath string, base *nurl.URL) string {
 	fullURL, err := base.Parse(relativePath)
 	if err != nil {
 		return ""

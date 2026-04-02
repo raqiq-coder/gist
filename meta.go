@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"net/url"
+	nurl "net/url"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -14,16 +14,16 @@ type meta struct {
 	publishedAt *time.Time
 	poster      string
 	favicon     string
-	sourceURL   *url.URL
+	sourceURL   *nurl.URL
 	publisher   string
 }
 
 func (a *Article) getMeta() {
 	sources := []*meta{
 		a.getJsonLD(),
-		// getOgTags()
-		// getTwitterTags()
-		// getMetaTags()
+		a.getOgTags(),
+		a.getTwitterTags(),
+		a.getMetaHTML(),
 	}
 
 	a.getLang()
@@ -63,7 +63,7 @@ func (a *Article) getOriginURL() {
 	a.doc.Find("link[rel='canonical']").Each(func(i int, s *goquery.Selection) {
 		href := s.AttrOr("href", "")
 
-		parsed, err := url.Parse(href)
+		parsed, err := nurl.Parse(href)
 		if rxURL.MatchString(href) && err == nil {
 			a.SourceURL = parsed
 		} else {
