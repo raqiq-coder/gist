@@ -32,7 +32,11 @@ var ogSelectors = map[string]string{
 	publisher:   "site_name",
 }
 
-func ogTags(node *goquery.Selection) *Meta {
+type ogTags struct{}
+
+var _ metasource = &ogTags{}
+
+func (*ogTags) extract(node *goquery.Selection) *Meta {
 	m := &Meta{}
 
 	for k, v := range ogSelectors {
@@ -61,7 +65,11 @@ var twitterSelectors = map[string]string{
 	creator:     "creator",
 }
 
-func twitterTags(node *goquery.Selection) *Meta {
+type twitterTags struct{}
+
+var _ metasource = &twitterTags{}
+
+func (*twitterTags) extract(node *goquery.Selection) *Meta {
 	m := &Meta{}
 
 	for k, v := range twitterSelectors {
@@ -76,7 +84,11 @@ func twitterTags(node *goquery.Selection) *Meta {
 	return m
 }
 
-func metaHTML(node *goquery.Selection) *Meta {
+type htmlTags struct{}
+
+var _ metasource = &htmlTags{}
+
+func (*htmlTags) extract(node *goquery.Selection) *Meta {
 	m := &Meta{}
 
 	authorVal := node.Find("meta[name='author']").AttrOr("content", "")

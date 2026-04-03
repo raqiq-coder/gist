@@ -16,7 +16,8 @@ type Parser struct {
 }
 
 type ParserCfg struct {
-	MaxItemsLen int
+	MaxHTMLBytes   int
+	CharThresholds int
 
 	Timeout   time.Duration
 	UserAgent string
@@ -84,8 +85,17 @@ type Article struct {
 }
 
 func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *nurl.URL) (*Article, error) {
-	if p.cfg.MaxItemsLen > 0 && doc.Length() > p.cfg.MaxItemsLen {
+	html, err := doc.Html()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get html: %w", err)
+	}
+
+	if p.cfg.MaxHTMLBytes > 0 && len(html) > p.cfg.MaxHTMLBytes {
 		return nil, fmt.Errorf("document is very big")
+	}
+
+	if p.cfg.CharThresholds > 0 && len(doc.Text()) < p.cfg.CharThresholds {
+		return nil, fmt.Errorf("document hasnt enough characters")
 	}
 
 	clone := goquery.CloneDocument(doc)

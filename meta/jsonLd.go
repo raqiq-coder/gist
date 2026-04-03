@@ -7,7 +7,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func jsonLD(node *goquery.Selection) *Meta {
+type jsonLD struct {
+}
+
+var _ metasource = &jsonLD{}
+
+func (*jsonLD) extract(node *goquery.Selection) *Meta {
 	meta := &Meta{}
 
 	node.Find(`script[type="application/ld+json"]`).Each(func(i int, s *goquery.Selection) {

@@ -19,24 +19,22 @@ type Meta struct {
 	Lang        string
 }
 
-func Extract(node *goquery.Selection, baseURL *nurl.URL) *Meta {
-	m := &Meta{}
+type metasource interface {
+	extract(node *goquery.Selection) *Meta
+}
 
-	sources := []*Meta{
-		jsonLD(node),
-		ogTags(node),
-		twitterTags(node),
-		metaHTML(node),
+func Extract(node *goquery.Selection, baseURL *nurl.URL) *Meta {
+	msources := []metasource{
+		&jsonLD{},
+		&ogTags{},
+		&twitterTags{},
+		&htmlTags{},
 	}
 
-	for _, s := range sources {
-		metaEquals(&m.Author, s.Author)
-		metaEquals(&m.Title, s.Title)
-		metaEquals(&m.Description, s.Description)
-		metaEquals(&m.Favicon, s.Favicon)
-		metaEquals(&m.Poster, s.Poster)
-		metaEquals(&m.PublishedAt, s.PublishedAt)
-		metaEquals(&m.Publisher, s.Publisher)
+	m := &Meta{}
+	for _, ms := range msources {
+		res := ms.extract(node)
+		assignMeta(m, res)
 	}
 
 	m.Lang = lang(node)
@@ -81,9 +79,19 @@ func originURL(node *goquery.Selection, baseURL *nurl.URL) *nurl.URL {
 	return url
 }
 
-func metaEquals[T comparable](t *T, v T) {
+func assignMeta(t, s *Meta) {
+	metaEquals(&t.Author, s.Author)
+	metaEquals(&t.Title, s.Title)
+	metaEquals(&t.Description, s.Description)
+	metaEquals(&t.Favicon, s.Favicon)
+	metaEquals(&t.Poster, s.Poster)
+	metaEquals(&t.PublishedAt, s.PublishedAt)
+	metaEquals(&t.Publisher, s.Publisher)
+}
+
+func metaEquals[T comparable](t *T, s T) {
 	var zero T
-	if *t == zero && v != zero {
-		*t = v
+	if *t == zero && s != zero {
+		*t = s
 	}
 }
