@@ -2,14 +2,15 @@ package meta
 
 import (
 	"net/http"
-	nurl "net/url"
+	"net/url"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 )
 
 func checkImg(img string) bool {
-	parsed, err := nurl.Parse(img)
+	parsed, err := url.Parse(img)
 	if err != nil {
 		return false
 	}
@@ -41,7 +42,7 @@ func checkImg(img string) bool {
 	return isSuccess && strings.HasPrefix(contentType, "image/")
 }
 
-func fixLocalImg(relativePath string, base *nurl.URL) string {
+func fixLocalImg(relativePath string, base *url.URL) string {
 	fullURL, err := base.Parse(relativePath)
 	if err != nil {
 		return ""
@@ -50,4 +51,22 @@ func fixLocalImg(relativePath string, base *nurl.URL) string {
 	fullURL.Path = filepath.Clean(fullURL.Path)
 
 	return fullURL.String()
+}
+
+func isFilled(s any) bool {
+	v := reflect.ValueOf(s)
+	for _, field := range v.Fields() {
+		if field.IsZero() {
+			return false
+		}
+	}
+
+	return true
+}
+
+func equateNonEmpty[T comparable](t *T, s T) {
+	var zero T
+	if *t == zero && s != zero {
+		*t = s
+	}
 }

@@ -2,11 +2,10 @@ package meta
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-
-	nurl "net/url"
 )
 
 const (
@@ -120,7 +119,7 @@ func (m *Meta) setMetaField(tagType string, val string) {
 	case creator:
 		m.Author = val
 	case sourceURL:
-		parsed, err := nurl.Parse(val)
+		parsed, err := url.Parse(val)
 		if err == nil {
 			m.SourceURL = parsed
 		}

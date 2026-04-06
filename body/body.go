@@ -2,8 +2,7 @@ package body
 
 import (
 	"fmt"
-	nurl "net/url"
-	"slices"
+	"net/url"
 	"sort"
 	"strings"
 
@@ -11,6 +10,7 @@ import (
 )
 
 var tagsToRemove = []string{"script", "noscript", "style", "iframe", "button", "br", "footer", "aside", "header", "nav", "details", "figcaption", "input", "textarea"}
+var attrsToRemove = []string{"style", "template", "xmlns"}
 var containerTags = []string{"div", "article", "section", "main", "p"}
 
 type Body struct {
@@ -25,43 +25,58 @@ type Img struct {
 	Alt string
 }
 
-func Extract(node *goquery.Document, baseURL *nurl.URL) (*Body, error) {
+func Extract(node *goquery.Document, baseURL *url.URL) (*Body, error) {
 	clone := goquery.CloneDocument(node)
 	body := clone.Find("body")
 	if body.Contents().Length() == 0 {
 		return nil, fmt.Errorf("failed to find document body")
 	}
 
-	// p.doc = body
-
 	preProcess(body)
-
 	best := getBestCandidate(body)
 
-	postProcessing(best.s)
-	fixImageSources(best.s, baseURL)
+	htmlContent, err := best.s.Html()
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		return nil, err
+	}
+
+	postProcessing(doc.Selection)
+	fixImageSources(doc.Selection, baseURL)
 
 	b := &Body{}
-
-	doc := goquery.NewDocumentFromNode(best.s.Get(0))
 	if doc.Length() > 0 {
-		b.Images = extractImages(best.s)
+		b.Images = extractImages(doc.Selection)
 		b.HTML = doc
-		b.Text = best.s.Text()
-		b.Len = len(best.s.Text())
+		b.Text = doc.Text()
+		b.Len = len(doc.Text())
 	}
 
 	return b, nil
 }
 
 func preProcess(node *goquery.Selection) {
-	node.Find("*").RemoveAttr("style")
-
 	selector := strings.Join(tagsToRemove, ",")
 	node.Find(selector).Remove()
 
+	node.Find("*").Each(func(i int, s *goquery.Selection) {
+		for _, attr := range attrsToRemove {
+			s.RemoveAttr(attr)
+		}
+	})
+
 	unwrapTags(node, "figure", "picture")
+	removeEventListeners(node)
 	removeEmptyTags(node)
+
+	if html, err := node.Html(); err == nil {
+		cleanHtml := rxHTMLComment.ReplaceAllString(html, "")
+		node.SetHtml(cleanHtml)
+	}
 }
 
 type candidate struct {
@@ -74,13 +89,15 @@ func getBestCandidate(s *goquery.Selection) *candidate {
 
 	selector := strings.Join(containerTags, ",")
 	s.Find(selector).Each(func(i int, s *goquery.Selection) {
-		if score := calcScore(s); score > 0 {
-			candidates = append(candidates, &candidate{s, score})
+		text := strings.TrimSpace(s.Text())
+		textLen := len(text)
+
+		if textLen < 10 && s.Find("img").Length() == 0 {
+			s.Remove()
 		}
 
-		classID := getClassID(s)
-		if matched := rxNegativeClasses.MatchString(classID); matched {
-			s.Remove()
+		if score := calcScore(s, textLen); score > 0 {
+			candidates = append(candidates, &candidate{s, score})
 		}
 	})
 
@@ -105,14 +122,8 @@ func getBestCandidate(s *goquery.Selection) *candidate {
 	return best
 }
 
-func calcScore(s *goquery.Selection) float64 {
-	text := strings.TrimSpace(s.Text())
-	textLen := len(text)
+func calcScore(s *goquery.Selection, textLen int) float64 {
 	score := float64(textLen) / 100.0
-
-	if textLen < 10 && s.Find("img").Length() == 0 {
-		s.Remove()
-	}
 
 	linksTextLen := 0
 	s.Find("a").Each(func(i int, a *goquery.Selection) {
@@ -159,62 +170,35 @@ func postProcessing(s *goquery.Selection) {
 			a.Remove()
 		}
 
+		// TODO: Нужно лучше продумать эту историю. А то сейчас удаляется и нормальный текст где есть спец символы
 		linkText := a.Text()
 		if hasSymbol(linkText) {
 			a.Remove()
 		}
 
-		parsed, _ := nurl.Parse(href)
+		parsed, _ := url.Parse(href)
 		if !parsed.IsAbs() {
 			unwrapSelection(a)
 		}
 	})
 
-	s.Find("h1, h2, h3, h4, h5, h6").Each(func(i int, h *goquery.Selection) {
-		after := h.NextAll()
-		hasContent := false
+	s.Find("h1, h2, h3, h4, h5, h6").FilterFunction(isSingleHeading).Remove()
+	s.Find("hr").FilterFunction(isHrSeq).Remove()
+	s.Find("svg").FilterFunction(isUIIcon).Remove()
+	s.Find(strings.Join(tagsToRemove, ",")).Remove()
 
-		after.Each(func(j int, el *goquery.Selection) {
-			if len(strings.TrimSpace(el.Text())) > 20 || el.Is("img, ul, ol, table, blockquote") {
-				hasContent = true
-				return
-			}
-		})
-
-		parent := h.Parent()
-		ignoreParents := []string{
-			"body", "article", "main", "section",
-		}
-
-		isRootParent := slices.Contains(ignoreParents, parent.Get(0).Data)
-		if parent.Length() > 0 && !isRootParent {
-			parent.NextAll().Each(func(j int, el *goquery.Selection) {
-				if len(strings.TrimSpace(el.Text())) > 20 || el.Is("img, ul, ol, table, blockquote") {
-					hasContent = true
-					return
-				}
-			})
-		}
-
-		if h.Prev().Length() == 0 && h.Parent().Prev().Length() == 0 {
-			h.Remove()
-		}
-
-		if !hasContent {
-			h.Remove()
+	s.Find("p").Each(func(i int, p *goquery.Selection) {
+		text := p.Text()
+		if rxDoantionText.MatchString(text) && len(text) < 100 {
+			p.Remove()
 		}
 	})
 
-	s.Find("hr").Each(func(i int, hr *goquery.Selection) {
-		next := hr.Next()
-		prev := hr.Prev()
-
-		if next.Length() == 0 || prev.Length() == 0 {
-			hr.Remove()
-		}
-
-		if next.Is("hr") || prev.Is("hr") {
-			hr.Remove()
+	selector := strings.Join(containerTags, ",")
+	s.Find(selector).Each(func(i int, s *goquery.Selection) {
+		classID := getClassID(s)
+		if matched := rxNegativeClasses.MatchString(classID); matched {
+			s.Remove()
 		}
 	})
 
@@ -228,32 +212,23 @@ func postProcessing(s *goquery.Selection) {
 		}
 	})
 
+	s.Find("*").RemoveAttr("class").RemoveAttr("id")
+	s.Find(`ul:has(a[href*="/page/"]), ol:has(a:contains("Next")), ol:has(a:contains("Previous"))`).Remove()
+
+	removeDataAttrs(s)
+	removeEmptyTags(s)
+	unwrapTags(s, "main")
+	unwrapNestedDivs(s)
+
 	firstImg := s.Find("img").First()
-	unwrapTags(firstImg, "div")
-	if firstImg.Prev().Length() == 0 && firstImg.Parent().Prev().Length() == 0 {
+	if isFirstImg(firstImg, 6) {
 		firstImg.Remove()
 	}
 
-	s.Find("*").RemoveAttr("class").RemoveAttr("id")
-	s.Find(`ul:has(a[href*="/page/"]), ol:has(a:contains("Next")), ol:has(a:contains("Previous"))`).Remove()
-	s.Find(`[class*="pagination"], [class*="pager"], 
-		[class*="post-navigation"], [class*="page-nav"],
-		[class*="related"], [class*="comment"],
-		[class*="share"], [class*="social"],
-		[class*="banner"], [class*="nav"]`).Remove()
-
-	removeEventListeners(s)
-	removeDataAttrs(s)
-	removeEmptyTags(s)
-
-	html, _ := s.Html()
-	cleanHtml := removeSpace(html)
-	cleanHtml = rxHTMLComment.ReplaceAllString(cleanHtml, "")
-
-	s.SetHtml(cleanHtml)
+	formatHTML(s)
 }
 
-func fixImageSources(node *goquery.Selection, baseURL *nurl.URL) {
+func fixImageSources(node *goquery.Selection, baseURL *url.URL) {
 	attrsToRemove := []string{
 		"srcset",
 		"sizes",
@@ -262,8 +237,6 @@ func fixImageSources(node *goquery.Selection, baseURL *nurl.URL) {
 		"loading",
 		"decoding",
 		"crossorigin",
-		"width",
-		"height",
 	}
 
 	node.Find("img").Each(func(i int, img *goquery.Selection) {
@@ -280,13 +253,13 @@ func fixImageSources(node *goquery.Selection, baseURL *nurl.URL) {
 
 		///_next/image?url=
 		if strings.HasPrefix(src, "/_next/image") {
-			parsed, err := nurl.Parse(src)
+			parsed, err := url.Parse(src)
 			if err != nil {
 				return
 			}
 
 			if realURL := parsed.Query().Get("url"); realURL != "" {
-				decoded, err := nurl.QueryUnescape(realURL)
+				decoded, err := url.QueryUnescape(realURL)
 				if err == nil {
 					fullSrc = decoded
 				} else {
@@ -299,8 +272,7 @@ func fixImageSources(node *goquery.Selection, baseURL *nurl.URL) {
 
 		if fullSrc != "" {
 			img.SetAttr("src", fullSrc)
-			img.SetAttr("width", "100%")
-			img.SetAttr("height", "auto")
+			fixImgSize(img)
 		}
 	})
 }

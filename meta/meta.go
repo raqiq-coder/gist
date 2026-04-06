@@ -1,7 +1,7 @@
 package meta
 
 import (
-	nurl "net/url"
+	"net/url"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -14,7 +14,7 @@ type Meta struct {
 	PublishedAt *time.Time
 	Poster      string
 	Favicon     string
-	SourceURL   *nurl.URL
+	SourceURL   *url.URL
 	Publisher   string
 	Lang        string
 }
@@ -23,23 +23,27 @@ type metasource interface {
 	extract(node *goquery.Selection) *Meta
 }
 
-func Extract(node *goquery.Selection, baseURL *nurl.URL) *Meta {
+func Extract(node *goquery.Selection, baseURL *url.URL) *Meta {
 	msources := []metasource{
-		&jsonLD{},
 		&ogTags{},
+		&jsonLD{},
 		&twitterTags{},
 		&htmlTags{},
 	}
 
 	m := &Meta{}
-	for _, ms := range msources {
-		res := ms.extract(node)
-		assignMeta(m, res)
-	}
-
 	m.Lang = lang(node)
 	m.Favicon = favicon(node, baseURL)
 	m.SourceURL = originURL(node, baseURL)
+
+	for _, ms := range msources {
+		if isFilled(*m) {
+			break
+		}
+
+		res := ms.extract(node)
+		assignMeta(m, res)
+	}
 
 	return m
 }
@@ -48,7 +52,7 @@ func lang(node *goquery.Selection) string {
 	return node.Find("html").AttrOr("lang", "")
 }
 
-func favicon(node *goquery.Selection, baseURL *nurl.URL) string {
+func favicon(node *goquery.Selection, baseURL *url.URL) string {
 	icon := ""
 	node.Find("link[rel*='icon']").Each(func(i int, s *goquery.Selection) {
 		href := s.AttrOr("href", "")
@@ -63,12 +67,12 @@ func favicon(node *goquery.Selection, baseURL *nurl.URL) string {
 	return icon
 }
 
-func originURL(node *goquery.Selection, baseURL *nurl.URL) *nurl.URL {
-	var url *nurl.URL
+func originURL(node *goquery.Selection, baseURL *url.URL) *url.URL {
+	var url *url.URL
 	node.Find("link[rel='canonical']").Each(func(i int, s *goquery.Selection) {
 		href := s.AttrOr("href", "")
 
-		parsed, err := nurl.Parse(href)
+		parsed, err := url.Parse(href)
 		if rxURL.MatchString(href) && err == nil {
 			url = parsed
 		} else {
@@ -80,18 +84,11 @@ func originURL(node *goquery.Selection, baseURL *nurl.URL) *nurl.URL {
 }
 
 func assignMeta(t, s *Meta) {
-	metaEquals(&t.Author, s.Author)
-	metaEquals(&t.Title, s.Title)
-	metaEquals(&t.Description, s.Description)
-	metaEquals(&t.Favicon, s.Favicon)
-	metaEquals(&t.Poster, s.Poster)
-	metaEquals(&t.PublishedAt, s.PublishedAt)
-	metaEquals(&t.Publisher, s.Publisher)
-}
-
-func metaEquals[T comparable](t *T, s T) {
-	var zero T
-	if *t == zero && s != zero {
-		*t = s
-	}
+	equateNonEmpty(&t.Author, s.Author)
+	equateNonEmpty(&t.Title, s.Title)
+	equateNonEmpty(&t.Description, s.Description)
+	equateNonEmpty(&t.Favicon, s.Favicon)
+	equateNonEmpty(&t.Poster, s.Poster)
+	equateNonEmpty(&t.PublishedAt, s.PublishedAt)
+	equateNonEmpty(&t.Publisher, s.Publisher)
 }

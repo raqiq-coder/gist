@@ -3,7 +3,7 @@ package gist
 import (
 	"fmt"
 	"net/http"
-	nurl "net/url"
+	"net/url"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -34,7 +34,7 @@ func NewParser(cfg *ParserCfg) *Parser {
 	return &Parser{cfg: cfg}
 }
 
-func (p *Parser) Parse(url *nurl.URL) (*Article, error) {
+func (p *Parser) Parse(url *url.URL) (*Article, error) {
 	if url == nil {
 		return nil, fmt.Errorf("invalid URL")
 	}
@@ -76,7 +76,7 @@ type Article struct {
 	Poster      string
 	Favicon     string
 	Lang        string
-	SourceURL   *nurl.URL
+	SourceURL   *url.URL
 	Publisher   string
 	HTML        *goquery.Document
 	Text        string
@@ -84,7 +84,7 @@ type Article struct {
 	Images      []*body.Img
 }
 
-func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *nurl.URL) (*Article, error) {
+func (p *Parser) ParseDoc(doc *goquery.Document, baseURL *url.URL) (*Article, error) {
 	html, err := doc.Html()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get html: %w", err)
