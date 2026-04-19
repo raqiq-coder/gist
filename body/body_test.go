@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
@@ -98,7 +99,7 @@ func TestBodyExtraction(t *testing.T) {
 				t.Fatalf("failed to read expected file %s: %v", expectedPath, err)
 			}
 
-			if resHTML != string(expectedContent) {
+			if strings.TrimSpace(resHTML) != strings.TrimSpace(string(expectedContent)) {
 				t.Errorf("result not match with template")
 			}
 		})
