@@ -69,6 +69,7 @@ func favicon(node *goquery.Selection, baseURL *url.URL) string {
 
 func originURL(node *goquery.Selection, baseURL *url.URL) *url.URL {
 	var url *url.URL
+
 	node.Find("link[rel='canonical']").Each(func(i int, s *goquery.Selection) {
 		href := s.AttrOr("href", "")
 
@@ -79,6 +80,10 @@ func originURL(node *goquery.Selection, baseURL *url.URL) *url.URL {
 			url = baseURL
 		}
 	})
+
+	if url == nil {
+		url = baseURL
+	}
 
 	return url
 }

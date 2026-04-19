@@ -8,7 +8,7 @@ import (
 	"github.com/raqiq-coder/gist"
 )
 
-// const url = "https://habr.com/ru/companies/X5Tech/articles/1001330/"
+const url = "https://habr.com/ru/companies/X5Tech/articles/1001330/"
 // const url = "https://habr.com/ru/articles/1015700/"
 // const url = "https://dev.to/ghostbuild/your-agent-can-think-it-cant-remember-5e1o"
 // const url = "https://dev.to/allenarduino/creating-a-fully-functional-contact-form-with-react-and-formgrid-api-499m"
@@ -23,7 +23,8 @@ import (
 // const url = "https://shipilev.net/jvm/anatomy-quarks/12-native-memory-tracking/"
 // const url = "https://fgiesen.wordpress.com/2025/05/21/oodle-2-9-14-and-intel-13th-14th-gen-cpus/"
 // const url = "https://fsharpforfunandprofit.com/posts/mathematical-functions/"
-const url = "https://code.visualstudio.com/blogs/2026/02/05/multi-agent-development"
+// const url = "https://code.visualstudio.com/blogs/2026/02/05/multi-agent-development"
+// const url = "https://www.bram.us/2026/03/30/css-sticky-per-axis/" // vpn
 
 func main() {
 	parsed, err := nurl.Parse(url)

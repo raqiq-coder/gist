@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="awa-expId" content="vscw_aaflight1016_treatment:103440;" />
+	<meta name="awa-env" content="prod" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="google-site-verification" content="hNs7DXrTySP_X-0P_AC0WulAXvUwgSXEmgfcO2r79dw" />
+
+	<!-- Twitter and Facebook OpenGraph Metadata-->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@code" />
+
+	<meta name="description" content="VS Code has become the unified interface for all your coding agents. Manage local, background, and cloud agents in one place, use Claude and Codex agents alongside Copilot, and benefit from open standards like MCP and Agent Skills." />
+<meta name="keywords" content="" />
+<!-- Twitter and Facebook OpenGraph Metadata-->
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="og:url" content="https://code.visualstudio.com/blogs/2026/02/05/multi-agent-development" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Your Home for Multi-Agent Development" />
+<meta property="og:description" content="VS Code has become the unified interface for all your coding agents. Manage local, background, and cloud agents in one place, use Claude and Codex agents alongside Copilot, and benefit from open standards like MCP and Agent Skills." />
+
+<meta property="og:image" content="https://code.visualstudio.com/assets/blogs/2026/02/05/your-agent-ux.png" />
+
+
+
+	<link rel="shortcut icon" href="/assets/favicon.ico" sizes="128x128" />
+	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+
+	<title>Your Home for Multi-Agent Development</title>
+
+	<link rel="stylesheet" href="/dist/style.css">
+
+	<script src="https://consentdeliveryfd.azurefd.net/mscc/lib/v2/wcp-consent.js"></script>
+	<script type="text/javascript" src="https://js.monitor.azure.com/scripts/c/ms.analytics-web-4.min.js"></script>
+	
+	<script type="text/javascript">
+	// Leave as var; siteConsent is initialized and referenced elsewhere.
+	var siteConsent = null;
+	
+	const GPC_DataSharingOptIn = false;
+	WcpConsent.onInitCallback(function () {
+		window.appInsights = new oneDS.ApplicationInsights();
+		window.appInsights.initialize({
+			instrumentationKey: "1a3eb3104447440391ad5f2a6ee06a0a-62879566-bc58-4741-9650-302bf2af703f-7103",
+			propertyConfiguration: {
+				userConsented: false,
+				gpcDataSharingOptIn: false,
+				callback: {
+					userConsentDetails: siteConsent ? siteConsent.getConsent : undefined
+				},
+			},
+			cookieCfg: {
+				ignoreCookies: ["MSCC"]
+			},
+			webAnalyticsConfiguration:{ // Web Analytics Plugin configuration
+				urlCollectQuery: true,
+				urlCollectHash: true,
+				autoCapture: {
+					scroll: true,
+					pageView: true,
+					onLoad: true,
+					onUnload: true,
+					click: true,
+					resize: true,
+					jsError: true
+				}
+			}
+		}, []);
+	
+		window.appInsights.getPropertyManager().getPropertiesContext().web.gpcDataSharingOptIn = GPC_DataSharingOptIn;
+	});
+	</script>
+	<link rel="alternate" type="application/atom+xml" title="RSS Feed for code.visualstudio.com" href="/feed.xml" />
+</head>
+
+<body >
+	<!-- Setting theme here to avoid FOUC -->
+	<script>
+		function setTheme(themeName) {
+			if (themeName === 'dark') {
+				document.documentElement.removeAttribute('data-theme'); // dark is default, so no data-theme attribute needed
+			}
+
+			if (themeName === 'light') {
+				document.documentElement.setAttribute('data-theme', themeName);
+			}
+			return;
+		}
+
+		// Determine initial theme: user preference or system preference
+		let theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+		setTheme(theme); // Apply the initial theme
+
+		// Listen for changes in the system theme preference
+		window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+			if (!localStorage.getItem('theme')) { // Only if no user preference is saved
+				setTheme(e.matches ? 'dark' : 'light');
+			}
+		});
+	</script>
+
+	<div id="main">
+		<div class="navbar-fixed-container">
+			<div class="navbar navbar-inverse navbar-fixed-top ">
+				<div id='cookie-banner'></div>		<nav role="navigation" aria-label="Top Level">
+					<div class="container">
+						<div class="nav navbar-header">
+							<a class="navbar-brand" href="/"><span>Visual Studio Code</span></a>
+						</div>
+						<div class="navbar-collapse collapse">
+							<ul class="nav navbar-nav navbar-left">
+								<li ><a id="nav-docs" href="/docs">Docs</a></li>
+								<li ><a id="nav-updates" href="/updates">Updates</a>
+								</li>
+								<li class="active" ><a id="nav-blogs" href="/blogs">Blog</a></li>
+								<li ><a id="nav-extend" href="/api">API</a></li>
+								<li><a href="https://marketplace.visualstudio.com/VSCode" target="_blank" rel="noopener"
+										id="nav-extensions">Extensions</a></li>
+								<li ><a id="nav-mcp" href="/mcp">MCP</a></li>
+								<li ><a id="nav-faqs" href="/docs/supporting/faq">FAQ</a>
+								</li>
+								<li><a id="nav-events" href="https://aka.ms/vscode/live" target="_blank" rel="noopener">Events</a></li>
+							</ul>
+							<ul class="nav navbar-nav navbar-right" role="presentation">
+								<li>
+									<a class="link-button" href="/Download" id="nav-download">
+										<span>Download</span>
+									</a>
+								</li>
+							</ul>
+						</div>
+						<div class="navbar-actions">
+							<div class="search" role="presentation">
+								<div class="nav-search search-control" role="button" tabindex="0" aria-label="Open search dialog">
+									<div class="input-group" role="presentation">
+										<span class="input-group-btn">
+											<span class="btn search-icon-container" aria-hidden="true">
+												<img class="search-icon-dark" src="/assets/icons/search-dark.svg" alt="" />
+												<img class="search-icon-light" src="/assets/icons/search.svg" alt="" />
+											</span>
+										</span>
+										<span class="search-box form-control" aria-hidden="true" role="presentation"></span>
+										<span class="search-shortcut-placeholder">Search</span>
+										<span class="search-shortcut-overlay"></span>
+									</div>
+								</div>					</div>
+							<button type="button" class="theme-switch" id="theme-toggle">
+								<img class="theme-icon-light" src="/assets/icons/theme-light.svg" alt="Switch to the dark theme" />
+								<img class="theme-icon-dark" src="/assets/icons/theme-dark.svg" alt="Switch to the light theme" />
+							</button>
+							<a class="link-button navbar-actions-download" href="/Download">
+								<span>Download</span>
+							</a>
+						</div>
+						<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"
+							aria-label="Expand and Collapse Menu">
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+						</button>
+					</div>
+				</nav>
+			</div>
+		</div>		<div data-announcement-version="2026-03-17-ghcp-events" class="updates-banner js-hidden  ">
+			<div class="container">
+				<p class="message">Explore Agentic Development - <a href="https://aka.ms/githubcopilotdevdays" target="_blank" rel="noopener" id="banner-link-updates">Join a GitHub Copilot Dev Day near you!</a></p>
+			</div>
+			<div tabindex="0" role="button" title="Dismiss this update" class="dismiss-btn" id="banner-dismiss-btn"><span class="sr-only">Dismiss this update</span><span aria-hidden="true" class="glyph-icon"></span></div>
+		</div>
+		<!-- This div wraps around the entire site -->
+		<!-- The body itself should already have a main tag -->
+		<main id="main-content">
+			<div class="body-content docs docs-github-layout">
+    <div class="docs-layout-wrapper">
+        <!-- Left sidebar - Table of Contents -->
+        <aside class="docs-left-sidebar">
+            <nav id="docs-navbar" aria-label="Blog posts" class="docs-nav updates-nav visible-md visible-lg">
+            	<h4>Blog posts</h4>
+            	<ul class="nav">
+            		
+            			<li >
+            				<a href="/blogs/2026/03/13/how-VS-Code-Builds-with-AI" >How VS Code Builds with AI</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2026/03/05/making-agents-practical-for-real-world-development" >Agents for Real-World Dev</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2026/02/26/long-distance-nes" >Long Distance NES</a>
+            			</li>
+            		
+            			<li class="active">
+            				<a href="/blogs/2026/02/05/multi-agent-development" aria-label="Current Page: Multi-Agent Development">Multi-Agent Development</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2026/01/26/mcp-apps-support" >MCP Apps Support</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2026/01/15/docfind" >Building docfind</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/12/03/introducing-vs-code-insiders-podcast" >Introducing the VS Code Insiders Podcast</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/11/18/PrivateMarketplace" >Announcing Private Marketplace for VS Code</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/11/04/openSourceAIEditorSecondMilestone" >Open Source AI Editor: Second Milestone</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/11/03/unified-agent-experience" >A Unified Agent Experience</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/10/22/bring-your-own-key" >Expanding Model Choice</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/09/15/autoModelSelection" >Introducing auto model selection (preview)</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/07/17/copilot-coding-agent" >Command GitHub's Coding Agent from VS Code</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/06/30/openSourceAIEditorFirstMilestone" >Open Source AI Editor: First Milestone</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/06/12/full-mcp-spec-support" >Full MCP Spec Support</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/05/27/ai-and-remote" >Enhance productivity with AI + Remote Dev</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/05/19/openSourceAIEditor" >Open Source AI Editor</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/05/12/agent-mode-meets-mcp" >Adding MCP in VS Code</a>
+            			</li>
+            		
+            			<li >
+            				<a href="/blogs/2025/03/26/custom-instructions" >Better AI results with custom instructions</a>
+            			</li>
+            		
+            		<li >
+            			<a href="/blogs/archive" class="archive-link" >View All Posts</a>
+            		</li>
+            	</ul>
+            </nav>
+            <nav id="small-nav" aria-label="Blog posts" class="docs-nav updates-nav hidden-md hidden-lg">
+            	<label class="faux-h4" for="small-nav-dropdown">Blogs</label>
+            	<select id="small-nav-dropdown" aria-label="blog posts">
+            		
+            			<option value="/blogs/2026/03/13/how-VS-Code-Builds-with-AI" >How VS Code Builds with AI</option>
+            		
+            			<option value="/blogs/2026/03/05/making-agents-practical-for-real-world-development" >Agents for Real-World Dev</option>
+            		
+            			<option value="/blogs/2026/02/26/long-distance-nes" >Long Distance NES</option>
+            		
+            			<option value="/blogs/2026/02/05/multi-agent-development" selected>Multi-Agent Development</option>
+            		
+            			<option value="/blogs/2026/01/26/mcp-apps-support" >MCP Apps Support</option>
+            		
+            			<option value="/blogs/2026/01/15/docfind" >Building docfind</option>
+            		
+            			<option value="/blogs/2025/12/03/introducing-vs-code-insiders-podcast" >Introducing the VS Code Insiders Podcast</option>
+            		
+            			<option value="/blogs/2025/11/18/PrivateMarketplace" >Announcing Private Marketplace for VS Code</option>
+            		
+            			<option value="/blogs/2025/11/04/openSourceAIEditorSecondMilestone" >Open Source AI Editor: Second Milestone</option>
+            		
+            			<option value="/blogs/2025/11/03/unified-agent-experience" >A Unified Agent Experience</option>
+            		
+            			<option value="/blogs/2025/10/22/bring-your-own-key" >Expanding Model Choice</option>
+            		
+            			<option value="/blogs/2025/09/15/autoModelSelection" >Introducing auto model selection (preview)</option>
+            		
+            			<option value="/blogs/2025/07/17/copilot-coding-agent" >Command GitHub's Coding Agent from VS Code</option>
+            		
+            			<option value="/blogs/2025/06/30/openSourceAIEditorFirstMilestone" >Open Source AI Editor: First Milestone</option>
+            		
+            			<option value="/blogs/2025/06/12/full-mcp-spec-support" >Full MCP Spec Support</option>
+            		
+            			<option value="/blogs/2025/05/27/ai-and-remote" >Enhance productivity with AI + Remote Dev</option>
+            		
+            			<option value="/blogs/2025/05/19/openSourceAIEditor" >Open Source AI Editor</option>
+            		
+            			<option value="/blogs/2025/05/12/agent-mode-meets-mcp" >Adding MCP in VS Code</option>
+            		
+            			<option value="/blogs/2025/03/26/custom-instructions" >Better AI results with custom instructions</option>
+            		
+            		<option value="/blogs/archive" >View All Posts</option>
+            	</select>
+            </nav>        </aside>
+        
+        <!-- Content wrapper contains main content + right sidebar -->
+        <div class="docs-content-wrapper">
+            <!-- Main article content -->
+            <main class="docs-main-content body">
+                <h1>Your Home for Multi-Agent Development</h1>
+<p>February 5, 2026 by VS Code Team, <a href="https://x.com/code" class="external-link" target="_blank">@code</a></p>
+<p>Agents are everywhere. We've been working to make VS Code the home for multi-agent development. One place to run your agents, manage your sessions, and pick the right tool for each task, without switching editors or juggling subscriptions.</p>
+<p>With the <a href="https://aka.ms/VSCode/109" class="external-link" target="_blank">January 2026 release (1.109)</a>, we're taking the biggest step forward since we laid out that vision at GitHub Universe last year. You can now run Claude and Codex agents directly alongside GitHub Copilot. Start them as local agents when you need fast, interactive help, or delegate async to a cloud agent for longer-running tasks. We've also made updates to the Agent Sessions view, your single place to manage your agents.</p>
+<h2 id="_manage-all-your-agents" data-needslink="_manage-all-your-agents">Manage all your agents</h2>
+<p>The agent landscape keeps moving fast. We're all still figuring out how to work with agents. Fire-and-forget when the task is clear, hands-on when you want control, or somewhere in between; it depends on the task, and it changes. Either way, more agents mean more sessions to keep track of.</p>
+<p>The Agent Sessions view gives you one place to see all your agent sessions—local, background, cloud—and move between them as you work.</p>
+<p>Kick off a cloud agent for a well-defined refactor, then jump into a local session for something more exploratory. Monitor a background task or let it run as you work on something else.</p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/BsAHunfVwNs?si=6m4vsMuc2Wb0YRpb" title="Video showing the unified agent experience." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<p>The above demo illustrates how developers are constantly tackling multiple things at once: planning improvements, building features, reviewing results, debugging errors. For each moment, you need to pick the right tool: local when needing to steer, background or cloud when wanting isolated changes, parallel subagents when needing multiple processes.</p>
+<p>Here’s a quick overview to help you decide when to use local, background, or cloud agents:</p>
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Criteria</th>
+<th>Local</th>
+<th>Background</th>
+<th>Cloud</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where it runs</td>
+<td>Your machine</td>
+<td>Your machine (CLI)</td>
+<td>Remote infrastructure</td>
+</tr>
+<tr>
+<td>Interaction style</td>
+<td>Interactive</td>
+<td>Unattended (async)</td>
+<td>Unattended (async), Autonomous</td>
+</tr>
+<tr>
+<td>Team visibility</td>
+<td>No</td>
+<td>No</td>
+<td>Yes (PRs/issues)</td>
+</tr>
+<tr>
+<td>Isolation</td>
+<td>No (direct workspace)</td>
+<td>Yes (worktrees)</td>
+<td>Yes (remote)</td>
+</tr>
+</tbody>
+</table>
+<p>Now that you can run multiple agent types, the next question is which agents to use.</p>
+<h2 id="_your-agent-your-choice" data-needslink="_your-agent-your-choice">Your agent, your choice</h2>
+<p>With 1.109, you can run Claude and Codex agents: locally, or in the cloud, all under your same GitHub Copilot subscription.</p>
+<p>Codex has been available as a local agent <a href="https://code.visualstudio.com/blogs/2025/11/03/unified-agent-experience">for a few months</a>. Claude is new. It uses the official Claude Agent harness by Anthropic, so you get the same prompts, tools, and overall architecture as other Claude implementations.</p>
+<p><img src="/assets/blogs/2026/02/05/local-agents.png" alt="Screenshot of the Sessions Type picker in VS Code, showing the Claude and Codex agent options." loading="lazy"></p>
+<p>GitHub also <a href="https://github.blog/changelog/2026-02-04-claude-and-codex-are-now-available-in-public-preview-on-github/" class="external-link" target="_blank">just announced Claude and Codex agent support</a>. Copilot Pro+ and Enterprise subscribers can use them in VS Code as cloud agents today.</p>
+<p><img src="/assets/blogs/2026/02/05/cloud-agents.png" alt="Screenshot of the Partner Agents picker in VS Code, showing options for Claude and Codex." loading="lazy"></p>
+<div class="markdown-alert note" dir="auto">
+      <span>
+        <svg class="markdown-alert-icon" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true">
+          <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z">
+          </path>
+        </svg>
+        Note
+      </span><p>Enable or disable support for Claude agent sessions with the <span class="setting"><span class="setting-dropdown" data-setting-id="github.copilot.chat.claudeAgent.enabled">
+    <span class="setting-link-main">
+      <span class="codicon codicon-settings-gear dynamic-setting-icon"></span>
+      github.copilot.chat.claudeAgent.enabled
+    </span>
+    <button 
+      type="button"
+      class="setting-dropdown-trigger"
+      aria-haspopup="menu"
+      aria-expanded="false"
+      
+      aria-label="Open setting in VS Code">
+        <svg class="setting-dropdown-chevron" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.619-.618 4.357 4.357z"/>
+        </svg>
+    </button>
+    <span class="setting-dropdown-menu" role="menu" aria-label="Open setting">
+      <span role="menuitem" class="setting-action-item" data-version="stable" tabindex="0">Open in VS Code</span>
+      <span role="menuitem" class="setting-action-item" data-version="insiders" tabindex="-1">Open in VS Code Insiders</span>
+    </span>
+  </span></span> setting.</p>
+<p>Prerequisites for the Codex local agent: a Copilot Pro+ subscription and the <a href="https://marketplace.visualstudio.com/items?itemName=openai.chatgpt" class="external-link" target="_blank">OpenAI Codex extension</a>.</p>
+</div><p>The beauty of this unified approach is that all these agents show up in the same Agent Sessions view. You can delegate tasks between them, compare their outputs, and pick the right tool for each job.</p>
+<h2 id="_orchestrate-with-subagents" data-needslink="_orchestrate-with-subagents">Orchestrate with subagents</h2>
+<p>Running multiple agents is one thing. Getting them to work together is another.</p>
+<p>Let's say you're adding a new feature and your agent needs to research authentication patterns, check how similar features are structured in your codebase, AND scan the relevant docs. Doing this sequentially eats up time and adds a lot of context that makes it hard for the agent to focus on what's important.</p>
+<p><a href="https://code.visualstudio.com/docs/copilot/agents/subagents">Subagents</a> solve this. They're context-isolated agents that run independently from your main session—your main agent delegates work and only the final result flows back. The intermediate exploration stays contained, keeping your primary context clean.</p>
+<p>What's new this release: VS Code can now run multiple subagents in parallel. Fire off multiple tasks at once, get results faster, and save premium requests in the process.</p>
+<p>We've also added better visibility into what subagents are doing. You can see which tasks are running, which agent is being used, and expand any subagent to see the full prompt and result.</p>
+<p><video src="/assets/blogs/2026/02/05/subagents-clip.mp4" title="Video demonstrating parallel subagents in VS Code." autoplay muted controls></video></p>
+<p>Combine this with <a href="https://code.visualstudio.com/docs/copilot/customization/custom-agents">custom agents</a> to give each subagent specialized behavior: a research agent with read-only access and web search tools, an implementation agent with full editing capabilities, a security agent focused on vulnerability scanning. Define the tools, instructions, and model for each. Use <a href="https://code.visualstudio.com/docs/copilot/customization/custom-agents#_handoffs">handoffs</a> to create workflows that transition from plan to implement to review—all orchestrated from your main session.</p>
+<h2 id="_building-on-open-standards" data-needslink="_building-on-open-standards">Building on open standards</h2>
+<p>More agents, more ways to use them. But agents are only as useful as you can make them for your workflow.</p>
+<p>That's where open standards come in.</p>
+<p><a href="https://code.visualstudio.com/blogs/2026/01/26/mcp-apps-support">MCP Apps</a> landed last week. This is the first official MCP extension, and it lets tool calls return interactive UI components that render directly in chat: dashboards, forms, visualizations, multi-step workflows. This creates opportunities for a richer and more effective human-agent collaboration. VS Code is the first major AI code editor with full MCP Apps support, and we're so excited to see what the community builds.</p>
+<p><video src="/assets/blogs/2026/02/05/mcp-apps-wide-demo.mp4" title="Video demonstrating MCP Apps in VS Code." autoplay muted controls></video></p>
+<p>We've also made <a href="https://code.visualstudio.com/docs/copilot/customization/agent-skills">Agent Skills</a>, Anthropic's open standard for extending AI agents, generally available. Skills are specialized capabilities that help agents produce high-quality outputs—they provide tested instructions for domains like testing strategies, API design, or performance optimization. Extension authors can now even package and distribute skills with their extensions using the <code>chatSkills</code> contribution point. This means the ecosystem can share specialized AI capabilities the same way it shares code snippets and themes.</p>
+<h2 id="_vs-code-your-unified-agent-experience" data-needslink="_vs-code-your-unified-agent-experience">VS Code: your unified agent experience</h2>
+<p>Agents are changing how we work. You shouldn't have to pick just one, or switch tools every time something new comes along. With VS Code, you can run the agents you want, extend them with open standards, and manage it all from one place.</p>
+<p>A year ago, we were just introducing agent mode. Now you've got Copilot, Claude, and Codex running side by side and SO much more. We're building this alongside you, and your feedback shapes what comes next. Drop us an issue in the <a href="https://github.com/microsoft/vscode/issues" class="external-link" target="_blank">VS Code repo</a> or find us on social. We're just getting started.</p>
+<p>Want to see these features demoed live? Join us for <a href="https://youtube.com/live/tAezuMSJuFs" class="external-link" target="_blank">Agent Sessions Day</a> on February 19th!</p>
+<p>Happy coding!</p>
+
+            </main>
+            
+            <!-- Right sidebar - On This Page -->
+            <aside class="docs-right-sidebar hidden-xs">
+                <nav id="docs-subnavbar" aria-labelledby="docs-subnavbar-label">
+                    
+                    <h4 id="docs-subnavbar-label"><span class="sr-only">On this page there are 5 sections</span><span
+                            aria-hidden="true">On this page</span></h4>
+                    <ul class="nav">
+                        
+                        <li><a href="#_manage-all-your-agents">Manage all your agents</a></li>
+                        
+                        <li><a href="#_your-agent-your-choice">Your agent, your choice</a></li>
+                        
+                        <li><a href="#_orchestrate-with-subagents">Orchestrate with subagents</a></li>
+                        
+                        <li><a href="#_building-on-open-standards">Building on open standards</a></li>
+                        
+                        <li><a href="#_vs-code-your-unified-agent-experience">VS Code: your unified agent experience</a></li>
+                        
+                    </ul>
+                    
+                </nav>
+            </aside>
+        </div>
+        
+        <!-- Mobile connect widget -->
+        <div class="docs-mobile-widgets visible-xs">
+            <div class="connect-widget"></div>
+        </div>
+    </div>
+</div>
+		</main>
+	</div>
+
+	<div id="search-popup-overlay" class="search-popup-overlay" role="dialog" aria-modal="true" aria-label="Search">
+		<div class="search-popup-container">
+			<div class="search-popup-header">
+				<form class="search-popup-form">
+					<div class="input-group">
+						<input type="text" name="q" class="search-box form-control" placeholder="Search the website"
+							aria-label="Search text" />
+						<span class="input-group-btn">
+							<button tabindex="0" class="btn" type="submit" aria-label="Search">
+								<img class="search-icon-dark" src="/assets/icons/search-dark.svg" alt="Search" />
+								<img class="search-icon-light" src="/assets/icons/search.svg" alt="Search" />
+							</button>
+						</span>
+					</div>
+				</form>
+				<button class="search-popup-close" type="button" aria-label="Close search"><i class="codicon codicon-close" aria-hidden="true"></i></button>
+			</div>
+			<div class="search-popup-results">
+				<ul class="search-popup-results-list"></ul>
+			</div>
+			<div class="sr-only" role="status" aria-live="polite" aria-atomic="true" id="search-popup-status"></div>
+		</div>
+	</div>
+
+
+	<footer role="contentinfo" class="container">
+		<div class="footer-container">
+			<div class="footer-row">
+				<div class="footer-social">
+					<ul class="links">
+						<li>
+							<a href="https://github.com/microsoft/vscode"><img src="/assets/icons/github-icon.svg" alt="VS Code on Github"></a>
+						</li>
+						<li>
+							<a href="https://go.microsoft.com/fwlink/?LinkID=533687"><img src="/assets/icons/x-icon.svg" class="x-icon" alt="Follow us on X"></a>
+						</li>
+						<li>
+							<a href="https://www.linkedin.com/showcase/vs-code"><img src="/assets/icons/linkedin-icon.svg" alt="VS Code on LinkedIn"></a>
+						</li>
+						<li>
+							<a href="https://bsky.app/profile/vscode.dev"><img src="/assets/icons/bluesky-icon.svg" alt="VS Code on Bluesky"></a>
+						</li>
+						<li>
+							<a href="https://www.reddit.com/r/vscode/"><img src="/assets/icons/reddit-icon.svg" alt="Join the VS Code community on Reddit"></a>
+						</li>
+						<li>
+							<a href="https://www.vscodepodcast.com"><img src="/assets/icons/podcast-icon.svg" alt="The VS Code Insiders Podcast"></a>
+						</li>
+						<li>
+							<a href="https://www.tiktok.com/@vscode"><img src="/assets/icons/tiktok-icon.svg" alt="VS Code on TikTok"></a>
+						</li>
+						<li>
+							<a href="https://www.youtube.com/@code"><img src="/assets/icons/youtube-icon.svg" alt="VS Code on YouTube"></a>
+						</li>
+						<script>
+							function manageConsent() {
+								if (siteConsent && siteConsent.isConsentRequired) {
+									siteConsent.manageConsent();
+								}
+							}
+						</script>
+					</ul>
+					<a id="footer-microsoft-link" class="microsoft-logo" href="https://www.microsoft.com">
+						<img src="/assets/icons/microsoft.svg" alt="Microsoft homepage" />
+					</a>
+				</div>
+			</div>
+			<div class="footer-row">
+				<ul class="links">
+					<li><a id="footer-support-link" href="https://support.serviceshub.microsoft.com/supportforbusiness/create?sapId=d66407ed-3967-b000-4cfb-2c318cad363d"
+						target="_blank" rel="noopener" title="Get support for VS Code"
+						aria-label="Get support for VS Code (opens in new tab)">Support</a></li>
+					<li><a id="footer-privacy-link" href="https://go.microsoft.com/fwlink/?LinkId=521839"
+						target="_blank" rel="noopener" title="View the Microsoft privacy statement"
+						aria-label="Microsoft privacy statement (opens in new tab)">Privacy</a></li>
+					<li style="display: none;"><a id="footer-cookie-link" style="cursor: pointer;" onclick="manageConsent()"
+						target="_blank" rel="noopener">Manage Cookies</a></li>
+					<li><a id="footer-terms-link" href="https://www.microsoft.com/legal/terms-of-use"
+						target="_blank" rel="noopener" title="View the Microsoft Terms of Use"
+						aria-label="Microsoft Terms of Use (opens in new tab)">Terms of Use</a></li>
+					<li><a id="footer-license-link" href="/License"
+						target="_blank" rel="noopener" title="View the Visual Studio Code license"
+						aria-label="Visual Studio Code license (opens in new tab)">License</a></li>
+				</ul>
+			</div>
+			<div class="footer-row">
+				<ul class="links">
+					<li>
+						<svg class="privacy-choices" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 14" xml:space="preserve" height="16" width="43">
+							<title>Your Privacy Choices Opt-Out Icon</title>
+							<path d="M7.4 12.8h6.8l3.1-11.6H7.4C4.2 1.2 1.6 3.8 1.6 7s2.6 5.8 5.8 5.8z" style="fill-rule:evenodd;clip-rule:evenodd;fill:#fff"></path>
+							<path d="M22.6 0H7.4c-3.9 0-7 3.1-7 7s3.1 7 7 7h15.2c3.9 0 7-3.1 7-7s-3.2-7-7-7zm-21 7c0-3.2 2.6-5.8 5.8-5.8h9.9l-3.1 11.6H7.4c-3.2 0-5.8-2.6-5.8-5.8z" style="fill-rule:evenodd;clip-rule:evenodd;fill:#06f"></path>
+							<path d="M24.6 4c.2.2.2.6 0 .8L22.5 7l2.2 2.2c.2.2.2.6 0 .8-.2.2-.6.2-.8 0l-2.2-2.2-2.2 2.2c-.2.2-.6.2-.8 0-.2-.2-.2-.6 0-.8L20.8 7l-2.2-2.2c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0l2.2 2.2L23.8 4c.2-.2.6-.2.8 0z" style="fill:#fff"></path>
+							<path d="M12.7 4.1c.2.2.3.6.1.8L8.6 9.8c-.1.1-.2.2-.3.2-.2.1-.5.1-.7-.1L5.4 7.7c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0L8 8.6l3.8-4.5c.2-.2.6-.2.9 0z" style="fill:#06f"></path>
+						</svg>
+						<a id="footer-privacy-choices-link" href="https://aka.ms/YourCaliforniaPrivacyChoices"
+						target="_blank" rel="noopener" title="View Your Privacy Choices"
+						aria-label="Your Privacy Choices (opens in new tab)">Your Privacy Choices</a></li>
+					<li><a id="footer-consumer-health-privacy-link" href="https://go.microsoft.com/fwlink/?linkid=2259814"
+						target="_blank" rel="noopener" title="View the Microsoft Consumer Health Privacy policy"
+						aria-label="Microsoft Consumer Health Privacy policy (opens in new tab)">Consumer Health Privacy</a></li>
+				</ul>
+			</div>
+		</div>
+	</footer>
+	<script type="module">
+		document.addEventListener('DOMContentLoaded', () => {
+			const copilotDeepLinks = document.querySelectorAll('.copilot-deep-link');
+			if (copilotDeepLinks.length === 0) {
+				return;
+			}
+			if (window.innerWidth < 992) {
+				for (const link of copilotDeepLinks) {
+					link.href = 'https://aka.ms/vscode-activatecopilotfree';
+				}
+			}
+		});
+	</script>
+
+	<script src="/dist/index.js"></script>
+
+	
+
+	<script type="application/ld+json">
+		{
+			"@context" : "http://schema.org",
+			"@type" : "SoftwareApplication",
+			"name" : "Visual Studio Code",
+			"softwareVersion": "1.114",
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "USD"
+			},
+			"applicationCategory": "DeveloperApplication",
+			"applicationSubCategory": "Text Editor",
+			"alternateName": "VS Code",
+			"datePublished": "2021-11-03",
+			"operatingSystem": "Mac, Linux, Windows",
+			"logo": "https://code.visualstudio.com/assets/apple-touch-icon.png",
+			"screenshot": "https://code.visualstudio.com/assets/images/product-screenshot.png",
+			"releaseNotes": "https://code.visualstudio.com/updates",
+			"downloadUrl": "https://code.visualstudio.com/download",
+			"license": "https://code.visualstudio.com/license",
+			"softwareRequirements": "https://code.visualstudio.com/docs/supporting/requirements",
+			"url" : "https://code.visualstudio.com",
+			"author": {
+				"@type": "Organization",
+				"name": "Microsoft"
+			},
+			"publisher": {
+				"@type": "Organization",
+				"name": "Microsoft"
+			},
+			"maintainer": {
+				"@type": "Organization",
+				"name": "Microsoft"
+			},
+			"potentialAction": {
+				"@type": "SearchAction",
+				"target": "https://code.visualstudio.com/Search?q={search_term_string}",
+				"query-input": "required name=search_term_string"
+			},
+			"sameAs" : [
+				"https://en.wikipedia.org/wiki/Visual_Studio_Code",
+				"https://twitter.com/code",
+				"https://www.youtube.com/code",
+				"https://www.tiktok.com/@vscode",
+				"https://github.com/microsoft/vscode"
+			]
+		}
+	</script>
+</body>
+
+</html>

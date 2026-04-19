@@ -1,0 +1,804 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+<meta content = 'uft-8' name = 'charset'></meta>
+
+<title>Patterns for Reducing Friction in AI-Assisted Development</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" /><script defer src="https://cloud.umami.is/script.js" data-website-id="eb12527f-b713-4afa-905a-8a50f8a7f157"></script>
+<meta content = 'summary' name = 'twitter:card'></meta>
+
+<meta content = '16665197' name = 'twitter:site:id'></meta>
+
+<meta content = '@martinfowler' name = 'twitter:site'></meta>
+
+<meta content = 'Patterns for Reducing Friction in AI-Assisted Development' property = 'og:title'></meta>
+
+<meta content = 'https://martinfowler.com/articles/reduce-friction-ai/' property = 'og:url'></meta>
+
+<meta content = 'A long-form article entitled: "Patterns for Reducing Friction in AI-Assisted Development"' property = 'og:description'></meta>
+
+<meta content = 'https://martinfowler.com/logo-sq.png' property = 'og:image'></meta>
+
+<meta content = 'martinfowler.com' property = 'og:site_name'></meta>
+
+<meta content = 'article' property = 'og:type'></meta>
+
+<meta content = '2026-03-31' property = 'og:article:modified_time'></meta>
+
+<meta content = 'width=device-width, initial-scale=1' name = 'viewport'></meta>
+
+<link href = 'index.css' rel = 'stylesheet' type = 'text/css'></link>
+</head>
+
+<body><header id = 'banner' style = 'background-image: url("/banner.png"); background-repeat: no-repeat'>
+
+<div class = 'name-logo'><a href = 'https://martinfowler.com'><img src = '/mf-name-white.png'></img></a></div>
+  <div class = 'search'>
+    <!-- SiteSearch Google -->
+    <form method='GET' action="https://www.google.com/search">
+      <input type='hidden' name='ie' value='UTF-8'/>
+      <input type='hidden' name='oe' value='UTF-8'/>
+      <input class = 'field' type='text' 
+             name='q' size='15' maxlength='255' value=""/>
+      <button class = 'button' type='submit' 
+             name='btnG' value=" " title = "Search"/>
+      <input type='hidden' name='domains' value="martinfowler.com"/>
+      <input type='hidden' name='sitesearch' value=""/> 
+      <input
+          type='hidden' name='sitesearch' value="martinfowler.com"/>
+    </form>
+  </div>
+
+<div class = 'menu-button navmenu-button'><a class = 'icon icon-bars' href = '#navmenu-bottom'></a></div>
+
+<nav class = 'top-menu'>
+<ul>
+<li><a class = '' href = 'https://refactoring.com'>Refactoring</a></li>
+
+<li><a class = '' href = '/agile.html'>Agile</a></li>
+
+<li><a class = '' href = '/architecture'>Architecture</a></li>
+
+<li><a class = '' href = '/aboutMe.html'>About</a></li>
+
+<li><a class = 'tw' href = 'https://www.thoughtworks.com/engineering'>Thoughtworks</a></li>
+
+<li><a class = 'icon icon-rss' href = '/feed.atom' title = 'feed'></a></li>
+
+<li><a class = 'icon icon-twitter' href = 'https://www.twitter.com/martinfowler' title = 'Twitter stream'></a></li>
+
+<li class = 'icon'><a href = 'https://toot.thoughtworks.com/@mfowler' title = 'Mastodon stream'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.2595 13.9898C20.9852 15.4006 18.8033 16.9446 16.2974 17.2439C14.9907 17.3998 13.7041 17.5431 12.3321 17.4802C10.0885 17.3774 8.31809 16.9446 8.31809 16.9446C8.31809 17.163 8.33156 17.371 8.3585 17.5655C8.65019 19.7797 10.5541 19.9124 12.3576 19.9742C14.1779 20.0365 15.7987 19.5254 15.7987 19.5254L15.8735 21.1711C15.8735 21.1711 14.6003 21.8548 12.3321 21.9805C11.0814 22.0493 9.52849 21.9491 7.71973 21.4703C3.79684 20.432 3.12219 16.2504 3.01896 12.0074C2.98749 10.7477 3.00689 9.55981 3.00689 8.56632C3.00689 4.22771 5.84955 2.95599 5.84955 2.95599C7.2829 2.29772 9.74238 2.0209 12.2993 2H12.3621C14.919 2.0209 17.3801 2.29772 18.8133 2.95599C18.8133 2.95599 21.6559 4.22771 21.6559 8.56632C21.6559 8.56632 21.6916 11.7674 21.2595 13.9898ZM18.3029 8.9029C18.3029 7.82924 18.0295 6.97604 17.4805 6.34482C16.9142 5.71359 16.1726 5.39001 15.2522 5.39001C14.187 5.39001 13.3805 5.79937 12.8473 6.61819L12.3288 7.48723L11.8104 6.61819C11.2771 5.79937 10.4706 5.39001 9.40554 5.39001C8.485 5.39001 7.74344 5.71359 7.17719 6.34482C6.62807 6.97604 6.3547 7.82924 6.3547 8.9029V14.1562H8.43597V9.05731C8.43597 7.98246 8.88822 7.4369 9.79281 7.4369C10.793 7.4369 11.2944 8.08408 11.2944 9.36376V12.1547H13.3634V9.36376C13.3634 8.08408 13.8646 7.4369 14.8648 7.4369C15.7694 7.4369 16.2216 7.98246 16.2216 9.05731V14.1562H18.3029V8.9029Z"></path></svg>
+</a></li>
+
+<li class = 'icon'><a href = 'https://www.linkedin.com/in/martin-fowler-com/' title = 'LinkedIn'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.00098 3H20.001C20.5533 3 21.001 3.44772 21.001 4V20C21.001 20.5523 20.5533 21 20.001 21H4.00098C3.44869 21 3.00098 20.5523 3.00098 20V4C3.00098 3.44772 3.44869 3 4.00098 3ZM5.00098 5V19H19.001V5H5.00098ZM7.50098 9C6.67255 9 6.00098 8.32843 6.00098 7.5C6.00098 6.67157 6.67255 6 7.50098 6C8.3294 6 9.00098 6.67157 9.00098 7.5C9.00098 8.32843 8.3294 9 7.50098 9ZM6.50098 10H8.50098V17.5H6.50098V10ZM12.001 10.4295C12.5854 9.86534 13.2665 9.5 14.001 9.5C16.072 9.5 17.501 11.1789 17.501 13.25V17.5H15.501V13.25C15.501 12.2835 14.7175 11.5 13.751 11.5C12.7845 11.5 12.001 12.2835 12.001 13.25V17.5H10.001V10H12.001V10.4295Z"></path></svg>
+</a></li>
+
+<li class = 'icon'><a href = 'https://bsky.app/profile/martinfowler.com' title = 'BlueSky'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 11.3884C11.0942 9.62673 8.62833 6.34423 6.335 4.7259C4.13833 3.17506 3.30083 3.4434 2.75167 3.69256C2.11583 3.9784 2 4.95506 2 5.52839C2 6.10339 2.315 10.2367 2.52 10.9276C3.19917 13.2076 5.61417 13.9776 7.83917 13.7309C4.57917 14.2142 1.68333 15.4017 5.48083 19.6292C9.65833 23.9542 11.2058 18.7017 12 16.0392C12.7942 18.7017 13.7083 23.7651 18.4442 19.6292C22 16.0392 19.4208 14.2142 16.1608 13.7309C18.3858 13.9784 20.8008 13.2076 21.48 10.9276C21.685 10.2376 22 6.10256 22 5.52923C22 4.95423 21.8842 3.97839 21.2483 3.6909C20.6992 3.44256 19.8617 3.17423 17.665 4.72423C15.3717 6.34506 12.9058 9.62756 12 11.3884Z"></path></svg></a></li>
+</ul>
+</nav>
+</header>
+<nav id = 'top-navmenu'>
+<nav class = 'navmenu'>
+<div class = 'nav-head'>  <div class = 'search'>
+    <!-- SiteSearch Google -->
+    <form method='GET' action="https://www.google.com/search">
+      <input type='hidden' name='ie' value='UTF-8'/>
+      <input type='hidden' name='oe' value='UTF-8'/>
+      <input class = 'field' type='text' 
+             name='q' size='15' maxlength='255' value=""/>
+      <button class = 'button' type='submit' 
+             name='btnG' value=" " title = "Search"/>
+      <input type='hidden' name='domains' value="martinfowler.com"/>
+      <input type='hidden' name='sitesearch' value=""/> 
+      <input
+          type='hidden' name='sitesearch' value="martinfowler.com"/>
+    </form>
+  </div>
+
+<div class = 'closediv'>
+<span class = 'close' title = 'close'></span>
+</div>
+</div>
+
+<div class = 'nav-body'>
+<div class = 'topics'>
+<h2>Topics</h2>
+
+<p><a href = '/architecture'>Architecture</a></p>
+
+<p><a href = 'https://refactoring.com'>Refactoring</a></p>
+
+<p><a href = '/agile.html'>Agile</a></p>
+
+<p><a href = '/delivery.html'>Delivery</a></p>
+
+<p><a href = '/microservices'>Microservices</a></p>
+
+<p><a href = '/data'>Data</a></p>
+
+<p><a href = '/testing'>Testing</a></p>
+
+<p><a href = '/dsl.html'>DSL</a></p>
+</div>
+
+<div class = 'about'>
+<h2>about me</h2>
+
+<p><a href = '/aboutMe.html'>About</a></p>
+
+<p><a href = '/books'>Books</a></p>
+
+<p><a href = '/faq.html'>FAQ</a></p>
+</div>
+
+<div class = 'content'>
+<h2>content</h2>
+
+<p><a href = '/videos.html'>Videos</a></p>
+
+<p><a href = '/tags'>Content Index</a></p>
+
+<p><a href = '/boardgames'>Board Games</a></p>
+
+<p><a href = '/photos'>Photography</a></p>
+</div>
+
+<div class = 'tw'>
+<h2>Thoughtworks</h2>
+
+<p><a href = 'https://thoughtworks.com'>Home</a></p>
+
+<p><a href = 'https://thoughtworks.com/insights'>Insights</a></p>
+
+<p><a href = 'https://thoughtworks.com/careers'>Careers</a></p>
+
+<p><a href = 'https://thoughtworks.com/radar'>Radar</a></p>
+
+<p><a href = 'https://www.thoughtworks.com/engineering'>Engineering</a></p>
+</div>
+
+<div class = 'feeds'>
+<h2>follow</h2>
+
+<p><a href = '/feed.atom'>RSS</a></p>
+
+<p><a href = 'https://toot.thoughtworks.com/@mfowler'>Mastodon</a></p>
+
+<p><a href = 'https://www.linkedin.com/in/martin-fowler-com/'>LinkedIn</a></p>
+
+<p><a href = 'https://bsky.app/profile/martinfowler.com'>Bluesky</a></p>
+
+<p><a href = 'https://www.twitter.com/martinfowler'>X</a></p>
+
+<p><a href = 'https://boardgamegeek.com/blog/13064/martins-7th-decade'>BGG</a></p>
+</div>
+</div>
+</nav>
+</nav>
+
+<nav id = 'toc-dropdown'>
+<button class = 'dropdown-button'>
+<h2>Table of Contents</h2>
+</button>
+
+<div class = 'hidden' id = 'dropdownLinks'>
+<ul>
+<li><a href = '#top'>Top</a></li>
+
+<li><a href = '#TheFrustrationLoop'>The Frustration Loop</a></li>
+
+<li><a href = '#TheSpeedTrap'>The Speed Trap</a></li>
+
+<li><a href = '#TheTool-to-teammateShift'>The Tool-to-Teammate Shift</a></li>
+
+<li><a href = '#FivePatternsForAiCollaboration'>Five Patterns for AI Collaboration</a></li>
+
+<li><a href = '#TheSharedMentalModel'>The Shared Mental Model</a></li>
+
+<li><a href = '#Trade-offsAndLimitations'>Trade-offs and Limitations</a></li>
+
+<li><a href = '#WhereThisLeads'>Where This Leads</a></li>
+</ul>
+</div>
+</nav>
+
+<main class = 'index'>
+<h1>Patterns for Reducing Friction in AI-Assisted Development</h1>
+
+<section class = 'frontMatter'>
+<p class = 'abstract'><i>
+    The practices that make human pair programming effective&#x2014;onboarding, structured design discussion, 
+    shared standards&#x2014;apply equally to working with AI coding assistants. 
+    I propose five patterns that bring this collaborative scaffolding to AI-assisted development, 
+    shifting the experience from correcting a tool to collaborating with a capable teammate.
+  </i></p>
+
+<p class = 'date'>31 March 2026</p>
+<hr></hr>
+<div class = 'front-grid'>
+<div class = 'author-list'>
+<div class = 'author'>
+<div class = 'photo'><a href = 'https://www.linkedin.com/in/techygarg/'><img alt = 'Photo of Rahul Garg' src = 'index/rahul-garg.jpg' width = '80'></img></a></div>
+
+<address class = 'name'><a href = 'https://www.linkedin.com/in/techygarg/' rel = 'author'>Rahul Garg</a></address>
+
+<div class = 'bio'>
+<p> Rahul is a Principal Engineer at Thoughtworks, based in Gurgaon, India. 
+     He is passionate about the craft of building maintainable software through DDD and Clean Architecture, 
+     and explores how AI can help teams achieve engineering excellence.</p>
+</div>
+</div>
+</div>
+
+<div class = 'tags'>
+<p class = 'tag-link'><a href = /tags/generative%20AI.html>generative AI</a></p>
+</div>
+
+<div class = 'contents'>
+<h2>Contents</h2>
+
+<ul>
+<li><a href = '#TheFrustrationLoop'>The Frustration Loop</a></li>
+
+<li><a href = '#TheSpeedTrap'>The Speed Trap</a></li>
+
+<li><a href = '#TheTool-to-teammateShift'>The Tool-to-Teammate Shift</a></li>
+
+<li><a href = '#FivePatternsForAiCollaboration'>Five Patterns for AI Collaboration</a></li>
+
+<li><a href = '#TheSharedMentalModel'>The Shared Mental Model</a></li>
+
+<li><a href = '#Trade-offsAndLimitations'>Trade-offs and Limitations</a></li>
+
+<li><a href = '#WhereThisLeads'>Where This Leads</a></li>
+</ul>
+</div>
+
+<div class = 'page-list'>
+<h2>Patterns</h2>
+
+<ul>
+<li><a href = 'knowledge-priming.html'>Knowledge Priming</a></li>
+
+<li><a href = 'design-first-collaboration.html'>Design-First Collaboration</a></li>
+
+<li><a href = 'context-anchoring.html'>Context Anchoring</a></li>
+
+<li><a href = 'encoding-team-standards.html'>Encoding Team Standards</a></li>
+</ul>
+</div>
+</div>
+<hr></hr></section>
+
+<div class = 'paperBody shallow'>
+<p>When I do pair programming with a colleague, certain rituals happen
+    naturally. I walk them through the codebase before asking them to
+    contribute. We sketch on a whiteboard before diving into implementation. I
+    explain our conventions, our constraints, the reasoning behind past
+    decisions. We review the work against team standards.</p>
+
+<p>With AI coding assistants, I have noticed that most developers&#x2014;myself
+    included, initially&#x2014;skip all of this. We type a prompt, expect aligned
+    output, and then wonder why the result doesn't fit.</p>
+
+<p>The promise of AI coding assistants was compelling: dramatically faster
+    development, instant code generation, a tireless pair programmer available
+    around the clock. The adoption has been remarkable&#x2014;by most accounts, the
+    majority of professional developers now use tools like GitHub Copilot,
+    Cursor, or Claude in their daily work.</p>
+
+<p>Yet a consistent frustration seems to be emerging. The time saved by
+    AI-generated code is often consumed by the effort required to correct it. I
+    have experienced&#x2014;and heard others describe&#x2014;a cycle I call the “Frustration
+    Loop”: generate code, review it, find it doesn't fit the codebase,
+    regenerate with corrections, review again, and eventually either accept
+    heavily-modified output or abandon the attempt entirely.</p>
+
+<p>The pattern is familiar enough that it warrants examination. My sense is
+    that this is not a failure of AI capability&#x2014;modern language models are
+    remarkably sophisticated. The friction arises from how we collaborate with
+    these systems.</p>
+
+<section id = 'TheFrustrationLoop'>
+<h2>The Frustration Loop</h2>
+
+<p>The typical interaction pattern looks something like this:</p>
+
+<p>A developer asks the AI to create a service. The AI responds quickly
+      with syntactically correct code that follows common patterns from its
+      training data. However, it uses Express.js when the project uses Fastify.
+      It places files in <code>utils/</code> when the convention is
+      <code>lib/services/</code>. It generates class-based code when the
+      codebase is functional. Each correction requires another generation cycle,
+      and with each cycle, the time advantage erodes.</p>
+
+<pre>
+Generate → Review → "Not quite right" → Regenerate → Review → "Still wrong" → Give up
+      </pre>
+
+<p>This cycle persists because AI assistants, by default, draw from their
+      training data&#x2014;an aggregation of patterns from millions of repositories. They
+      produce what might be called “the average of the internet” rather than code
+      that fits a specific team's architecture and conventions.</p>
+
+<p>Common symptoms include:</p>
+
+<ul>
+<li>AI generates solutions that don't align with existing architecture </li>
+
+<li>Developers spend significant time on post-generation editing </li>
+
+<li>Context established early in a conversation is lost as the session lengthens
+        </li>
+
+<li>Quality varies depending on which team member is prompting</li>
+</ul>
+</section>
+
+<section id = 'TheSpeedTrap'>
+<h2>The Speed Trap</h2>
+
+<p>Part of the problem lies in how success is measured with these tools. Teams
+      often track metrics like time to first output or lines of code generated.
+      These metrics are easy to capture and show immediate results, but they obscure
+      the actual cost.</p>
+
+<p>If an AI generates 200 lines of code in seconds, but a developer spends 30
+      minutes reviewing, debugging, and refactoring to fit team patterns, the net
+      productivity gain is questionable. The work has shifted from writing to
+      fixing, but the total effort may not have decreased.</p>
+
+<p>When I pair with a human colleague, I don't measure success by how fast
+      they type. I care about whether their contribution fits the codebase, whether
+      it solves the right problem, whether it will hold up in review. The same
+      should apply to AI collaboration.</p>
+
+<p>More useful metrics focus on what I might call “collaboration quality”:</p>
+
+<table class = 'dark-head'>
+<thead>
+<tr><th>Misleading Metric</th><th>More Useful Alternative</th></tr>
+</thead>
+
+<tbody>
+<tr><td>Time to first output</td><td>First-pass acceptance rate</td></tr>
+
+<tr><td>Lines of code generated</td><td>Iteration cycles per task</td></tr>
+
+<tr><td>Tasks completed</td><td>Post-merge rework required</td></tr>
+
+<tr><td>Generation speed</td><td>Review burden compared to manual writing</td></tr>
+</tbody>
+</table>
+
+<p>For teams tracking DORA metrics, first-pass acceptance serves as a leading
+      indicator for change failure rate. Code that requires extensive correction
+      before being usable is a signal of misalignment, and misaligned code that ships
+      becomes technical debt.</p>
+</section>
+
+<section id = 'TheTool-to-teammateShift'>
+<h2>The Tool-to-Teammate Shift</h2>
+
+<p>A useful reframe, I believe, is to stop treating AI as a tool and start
+      treating it as a teammate&#x2014;a distinction that sounds semantic but has practical
+      implications.</p>
+
+<div class = 'soundbite'>
+<p>AI assistants are like junior developers with infinite energy but zero
+      context.</p>
+</div>
+
+<p>AI assistants are like junior developers with infinite energy but zero
+      context. They can work faster than any human, they never tire, and they
+      never complain. But they know nothing about a specific project's conventions,
+      constraints, or history. Without the same scaffolding a team would provide a
+      human collaborator, they default to generic patterns that may or may not
+      fit.</p>
+
+<p>Consider how I work with a new team member. I don't expect them to produce
+      high-quality, architecture-aligned code on their first day without context. I
+      onboard them. I walk through the codebase. I explain the patterns and the
+      reasoning behind architectural decisions. I pair with them on initial work. I
+      review their output against team standards.</p>
+
+<p>The parallel to pair programming is instructive:</p>
+
+<table class = 'dark-head'>
+<thead>
+<tr><th>Human Pair Programming</th><th>AI Collaboration Equivalent</th></tr>
+</thead>
+
+<tbody>
+<tr><td>“Let me show the docs first”</td><td>Sharing architectural context before requesting code</td></tr>
+
+<tr><td>“Let's sketch this on the whiteboard”</td><td>Structured design discussion before implementation</td></tr>
+
+<tr><td>“Here's how reviews work here”</td><td>Encoding standards into reusable prompts or commands</td></tr>
+
+<tr><td>“Let me update the doc with the decision”</td><td>Persisting decisions so they survive session boundaries</td></tr>
+
+<tr><td>“What did that teach us?”</td><td>Systematically capturing what worked and what didn't</td></tr>
+</tbody>
+</table>
+
+<p>The AI is fast&#x2014;remarkably fast. But it needs the same things a human pair
+      needs:</p>
+
+<ul>
+<li>Onboarding &#x2014; Context about the codebase before contributing</li>
+
+<li>Whiteboarding &#x2014; Structured design discussion before implementation</li>
+
+<li>Guardrails &#x2014; Standards and quality checks consistently applied</li>
+</ul>
+</section>
+
+<section id = 'FivePatternsForAiCollaboration'>
+<h2>Five Patterns for AI Collaboration</h2>
+
+<p>The framework I propose consists of five complementary patterns. Each
+      addresses a specific failure mode in AI collaboration&#x2014;and each mirrors a
+      practice that makes human collaboration effective.</p>
+
+<div class = 'pattern-list'>
+<section class = 'pattern-summary' id = 'KnowledgePriming'>
+<h3><a href = 'knowledge-priming.html'>Knowledge Priming</a></h3>
+
+<p><i>The human parallel: </i>Onboarding a new hire</p>
+
+<p>Before asking AI to generate code, share curated context about the project:
+            the tech stack with version numbers, directory structure, naming conventions,
+            and examples of existing patterns. This practice is essentially manual RAG
+            (Retrieval-Augmented Generation)&#x2014;filling the context window with high-value,
+            project-specific information that overrides generic training data.</p>
+
+<p>Just as I would walk a new team member through the codebase before asking
+            them to contribute, I prime the AI with the context it needs to produce
+            aligned output.</p>
+
+<p><i>The failure mode addressed: </i>AI defaults to generic patterns because it lacks
+          project-specific context.</p>
+
+<p class = 'link'>
+<p class = 'link live'><a href = 'knowledge-priming.html'>read more…</a></p>
+</p>
+</section>
+
+<section class = 'pattern-summary' id = 'Design-firstCollaboration'>
+<h3><a href = 'design-first-collaboration.html'>Design-First Collaboration</a></h3>
+
+<p><i>The human parallel: </i>Whiteboarding before coding</p>
+
+<p>Rather than asking AI to immediately produce code, walk through
+            progressive levels of design: capabilities, components, interactions,
+            contracts, and only then implementation. This mirrors the whiteboarding
+            that precedes coding in effective human collaboration.</p>
+
+<p>When I pair with a colleague on a complex feature, we don't jump straight
+            to the keyboard. We sketch. We align on approach. We catch misunderstandings
+            before they become bugs. The same discipline applies to AI.</p>
+
+<p><i>The failure mode addressed: </i>AI jumps to implementation before understanding
+          requirements, producing code that solves the wrong problem.</p>
+
+<p class = 'link'>
+<p class = 'link live'><a href = 'design-first-collaboration.html'>read more…</a></p>
+</p>
+</section>
+
+<section class = 'pattern-summary' id = 'EncodingTeamStandards'>
+<h3><a href = 'encoding-team-standards.html'>Encoding Team Standards</a></h3>
+
+<p><i>The human parallel: </i>What a senior developer does instinctively</p>
+
+<p>Every team has senior developers who instinctively know when code is
+            right&#x2014;they spot architectural drift, security gaps, and convention violations
+            that others miss. This intuition is invaluable, but it lives in their heads.
+            It does not scale.</p>
+
+<p>The solution is to make tacit knowledge explicit. Just as I would walk a
+            new hire through our conventions, I make those defaults explicit and shareable
+            for AI collaboration. When defaults exist as artifacts rather than intuition,
+            they apply consistently regardless of who is prompting.</p>
+
+<p><i>The failure mode addressed: </i>AI generates technically correct code that
+          violates team expectations, requiring extensive rework.</p>
+
+<p class = 'link'>
+<p class = 'link live'><a href = 'encoding-team-standards.html'>read more…</a></p>
+</p>
+</section>
+
+<section class = 'pattern-summary' id = 'ContextAnchoring'>
+<h3><a href = 'context-anchoring.html'>Context Anchoring</a></h3>
+
+<p><i>The human parallel: </i>Updating the doc with decisions</p>
+
+<p>Maintain a living document that captures decisions, constraints, and
+            current state as a feature evolves. This document serves as external memory,
+            anchoring context that would otherwise be lost as conversations grow longer or
+            sessions end.</p>
+
+<p>When pairing with humans, I naturally update shared documents as we make
+            decisions. The same practice prevents AI from contradicting itself or
+            forgetting earlier conclusions.</p>
+
+<p><i>The failure mode addressed: </i>AI forgets decisions made earlier in long
+          conversations, leading to contradictions and inconsistency.</p>
+
+<p class = 'link'>
+<p class = 'link live'><a href = 'context-anchoring.html'>read more…</a></p>
+</p>
+</section>
+
+<section class = 'pattern-summary' id = 'FeedbackFlywheel'>
+<h3><a href = 'feedback-flywheel.html'>Feedback Flywheel</a></h3>
+
+<p><i>The human parallel: </i>Retrospectives and continuous learning</p>
+
+<p>Systematically harvest learnings from AI interactions to improve the other
+            four patterns. When a prompt works particularly well, capture it. When AI
+            consistently misunderstands something, add it to the priming context. When a
+            failure pattern emerges, add a guardrail.</p>
+
+<p>Just as teams learn from retrospectives and improve their collaboration
+            over time, I build institutional knowledge about what makes AI collaboration
+            effective.</p>
+
+<p><i>The failure mode addressed: </i>Teams make the same mistakes repeatedly without
+          building institutional knowledge about effective AI collaboration.</p>
+
+<p class = 'link'>
+<p class = 'link dev'>(pattern under development)</p>
+</p>
+</section>
+</div>
+</section>
+
+<section id = 'TheSharedMentalModel'>
+<h2>The Shared Mental Model</h2>
+
+<p>These patterns work together to create what might be called a shared mental
+      model between humans and AI. When both operate from the same vocabulary
+      (through priming), the same architecture vision (through design-first
+      discussion), the same quality standards (through codified commands), and the
+      same decision history (through anchored documentation), the friction of
+      translation diminishes.</p>
+
+<p>The cognitive load shifts from constant vigilance and correction to
+      expressing intent and refining output. This is the difference between
+      struggling with a tool and collaborating with a capable partner.</p>
+
+<p>I hypothesize that these patterns, when applied consistently, could yield
+      meaningful improvements:</p>
+
+<ul>
+<li>Higher first-pass acceptance rates (reducing the generate-fix-regenerate
+        cycle)</li>
+
+<li>Fewer iteration cycles per task</li>
+
+<li>Less post-merge rework</li>
+</ul>
+
+<p>These are not yet validated findings&#x2014;this is a proposed framework based on
+      reasoning about why friction occurs and what might address it. Early
+      experiments in my own work have been encouraging, but more practice and
+      observation is needed.</p>
+</section>
+
+<section id = 'Trade-offsAndLimitations'>
+<h2>Trade-offs and Limitations</h2>
+
+<p>This approach is not without costs. Creating and maintaining priming
+      documents requires effort. Design-first conversations take longer than
+      immediately requesting code. The patterns require discipline to sustain.</p>
+
+<p>For simple, one-off tasks, the overhead may not be justified. A quick
+      utility function or a straightforward refactor may not warrant a full design
+      discussion. The investment pays off primarily for non-trivial work, especially
+      work that spans multiple sessions or involves team coordination.</p>
+
+<p>There is also a learning curve. Teams accustomed to treating AI as a search
+      engine or autocomplete system may find the transition to structured
+      collaboration unfamiliar. The shift requires deliberate practice.</p>
+</section>
+
+<section id = 'WhereThisLeads'>
+<h2>Where This Leads</h2>
+
+<p>I have outlined the problem of friction in AI-assisted development and
+      introduced a framework for addressing it. Each of the five patterns merits
+      deeper exploration:</p>
+
+<ul>
+<li>Knowledge Priming: What to include, how to structure it, how to keep it
+        current</li>
+
+<li>Design-First Collaboration: The levels of design, handling AI that wants
+        to skip ahead</li>
+
+<li>Encoding Team Standards: Making tacit knowledge explicit, scaling senior
+        intuition across the team</li>
+
+<li>Context Anchoring: Managing long conversations, surviving session
+        boundaries</li>
+
+<li>Feedback Flywheel: Systematic improvement, measuring what matters</li>
+</ul>
+
+<p>Subsequent articles will explore each pattern in depth.</p>
+
+<p>The underlying insight is straightforward: AI assistants are powerful but
+      contextless. The techniques that make human collaboration
+      effective&#x2014;onboarding, structured discussion, shared standards, documented
+      decisions, continuous learning&#x2014;apply equally to AI collaboration. My belief is
+      that developers who internalize this approach will experience AI as a force
+      multiplier rather than a source of friction.</p>
+</section>
+
+<hr class = 'bodySep'></hr>
+</div>
+
+<div class = 'appendix'>
+<section id = 'Acknowledgements'>
+<h2>Acknowledgements</h2>
+
+<p>
+        I'm grateful to several people who shaped this series. Jim Gumbley read early drafts 
+        and pushed on the layer beneath the practical advice&#x2014;especially the connection to how 
+        attention and context work in transformer models. His feedback sharpened the thinking 
+        and sparked ideas for future work.
+      </p>
+
+<p>
+        Vanya Seth has been a long-standing conversation partner on these ideas; 
+        she encouraged and guided me to draft articles for Martin's site.
+      </p>
+
+<p>
+        I treat AI as a teammate, not a tool&#x2014;the same philosophy behind this series. 
+        I anchored the base thought process: the ideas, structure, and voice.
+         AI accelerated the drafting and complemented my thinking with quick iterations and 
+         alternative phrasings. Together we complemented each other; the writing process itself
+          reflects the kind of collaboration these articles advocate.
+      </p>
+</section>
+</div>
+
+<div class = 'appendix'>
+<details id = 'SignificantRevisions'>
+<summary>Significant Revisions</summary>
+
+<p><i>31 March 2026: </i>Encoding Team Standards first published</p>
+
+<p><i>17 March 2026: </i>Context Anchoring first published</p>
+
+<p><i>03 March 2026: </i>Design-First Collaboration published</p>
+
+<p><i>24 February 2026: </i>Knowledge Priming first published</p>
+
+<p><i>24 February 2026: </i>Patterns for Reducing Friction in AI-Assisted Development first published</p>
+</details>
+</div>
+</main>
+
+<nav id = 'bottom-navmenu'>
+<nav class = 'navmenu'>
+<div class = 'nav-head'>  <div class = 'search'>
+    <!-- SiteSearch Google -->
+    <form method='GET' action="https://www.google.com/search">
+      <input type='hidden' name='ie' value='UTF-8'/>
+      <input type='hidden' name='oe' value='UTF-8'/>
+      <input class = 'field' type='text' 
+             name='q' size='15' maxlength='255' value=""/>
+      <button class = 'button' type='submit' 
+             name='btnG' value=" " title = "Search"/>
+      <input type='hidden' name='domains' value="martinfowler.com"/>
+      <input type='hidden' name='sitesearch' value=""/> 
+      <input
+          type='hidden' name='sitesearch' value="martinfowler.com"/>
+    </form>
+  </div>
+
+<div class = 'closediv'>
+<span class = 'close' title = 'close'></span>
+</div>
+</div>
+
+<div class = 'nav-body'>
+<div class = 'topics'>
+<h2>Topics</h2>
+
+<p><a href = '/architecture'>Architecture</a></p>
+
+<p><a href = 'https://refactoring.com'>Refactoring</a></p>
+
+<p><a href = '/agile.html'>Agile</a></p>
+
+<p><a href = '/delivery.html'>Delivery</a></p>
+
+<p><a href = '/microservices'>Microservices</a></p>
+
+<p><a href = '/data'>Data</a></p>
+
+<p><a href = '/testing'>Testing</a></p>
+
+<p><a href = '/dsl.html'>DSL</a></p>
+</div>
+
+<div class = 'about'>
+<h2>about me</h2>
+
+<p><a href = '/aboutMe.html'>About</a></p>
+
+<p><a href = '/books'>Books</a></p>
+
+<p><a href = '/faq.html'>FAQ</a></p>
+</div>
+
+<div class = 'content'>
+<h2>content</h2>
+
+<p><a href = '/videos.html'>Videos</a></p>
+
+<p><a href = '/tags'>Content Index</a></p>
+
+<p><a href = '/boardgames'>Board Games</a></p>
+
+<p><a href = '/photos'>Photography</a></p>
+</div>
+
+<div class = 'tw'>
+<h2>Thoughtworks</h2>
+
+<p><a href = 'https://thoughtworks.com'>Home</a></p>
+
+<p><a href = 'https://thoughtworks.com/insights'>Insights</a></p>
+
+<p><a href = 'https://thoughtworks.com/careers'>Careers</a></p>
+
+<p><a href = 'https://thoughtworks.com/radar'>Radar</a></p>
+
+<p><a href = 'https://www.thoughtworks.com/engineering'>Engineering</a></p>
+</div>
+
+<div class = 'feeds'>
+<h2>follow</h2>
+
+<p><a href = '/feed.atom'>RSS</a></p>
+
+<p><a href = 'https://toot.thoughtworks.com/@mfowler'>Mastodon</a></p>
+
+<p><a href = 'https://www.linkedin.com/in/martin-fowler-com/'>LinkedIn</a></p>
+
+<p><a href = 'https://bsky.app/profile/martinfowler.com'>Bluesky</a></p>
+
+<p><a href = 'https://www.twitter.com/martinfowler'>X</a></p>
+
+<p><a href = 'https://boardgamegeek.com/blog/13064/martins-7th-decade'>BGG</a></p>
+</div>
+</div>
+</nav>
+</nav>
+<footer id='page-footer'>
+<div class='tw-logo'>
+<a href='https://www.thoughtworks.com/engineering'>
+<img src='/thoughtworks_white.png'>
+</a>
+</div>
+<div class='menu-button'>
+<div class='icon-bars navmenu-button'></div>
+</div>
+<div class='copyright'>
+<p>© Martin Fowler | <a href="/aboutMe.html#disclosures">Disclosures</a></p>
+</div>
+</footer>
+
+<script src = '/jquery-1.11.3.min.js' type = 'text/javascript'></script>
+
+<script src = '/mfcom.js' type = 'text/javascript'></script>
+</body>
+</html>

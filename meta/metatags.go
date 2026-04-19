@@ -131,5 +131,4 @@ func (m *Meta) setMetaField(tagType string, val string) {
 			}
 		}
 	}
-
 }

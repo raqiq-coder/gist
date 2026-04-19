@@ -9,7 +9,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var tagsToRemove = []string{"script", "noscript", "style", "iframe", "button", "br", "footer", "aside", "header", "nav", "details", "figcaption", "input", "textarea"}
+var tagsToRemove = []string{"script", "noscript", "style", "iframe", "button", "br", "footer", "aside", "video", "header", "nav", "details", "figcaption", "input", "textarea"}
 var attrsToRemove = []string{"style", "template", "xmlns"}
 var containerTags = []string{"div", "article", "section", "main", "p"}
 
@@ -33,20 +33,20 @@ func Extract(node *goquery.Document, baseURL *url.URL) (*Body, error) {
 	}
 
 	preProcess(body)
-	best := getBestCandidate(body)
 
+	best := getBestCandidate(body)
 	htmlContent, err := best.s.Html()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get html: %w", err)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	htmlReader := strings.NewReader(htmlContent)
+	doc, err := goquery.NewDocumentFromReader(htmlReader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse html: %w", err)
 	}
 
-	postProcessing(doc.Selection)
-	fixImageSources(doc.Selection, baseURL)
+	postProcess(doc.Selection, baseURL)
 
 	b := &Body{}
 	if doc.Length() > 0 {
@@ -60,12 +60,22 @@ func Extract(node *goquery.Document, baseURL *url.URL) (*Body, error) {
 }
 
 func preProcess(node *goquery.Selection) {
-	selector := strings.Join(tagsToRemove, ",")
-	node.Find(selector).Remove()
+	s := strings.Join(tagsToRemove, ",")
+	node.Find(s).Remove()
 
 	node.Find("*").Each(func(i int, s *goquery.Selection) {
 		for _, attr := range attrsToRemove {
 			s.RemoveAttr(attr)
+		}
+	})
+
+	s = strings.Join(containerTags, ",")
+	node.Find(s).Each(func(i int, s *goquery.Selection) {
+		text := strings.TrimSpace(s.Text())
+		textLen := len(text)
+
+		if textLen < 10 && s.Find("img").Length() == 0 {
+			s.Remove()
 		}
 	})
 
@@ -89,14 +99,7 @@ func getBestCandidate(s *goquery.Selection) *candidate {
 
 	selector := strings.Join(containerTags, ",")
 	s.Find(selector).Each(func(i int, s *goquery.Selection) {
-		text := strings.TrimSpace(s.Text())
-		textLen := len(text)
-
-		if textLen < 10 && s.Find("img").Length() == 0 {
-			s.Remove()
-		}
-
-		if score := calcScore(s, textLen); score > 0 {
+		if score := calcScore(s); score > 0 {
 			candidates = append(candidates, &candidate{s, score})
 		}
 	})
@@ -110,7 +113,7 @@ func getBestCandidate(s *goquery.Selection) *candidate {
 	})
 
 	best := candidates[0]
-	for _, child := range candidates {
+	for _, child := range candidates[1:] {
 		if best.s.HasNodes(child.s.Get(0)) != nil {
 			ratio := child.score / best.score
 			if ratio > 0.85 {
@@ -122,7 +125,10 @@ func getBestCandidate(s *goquery.Selection) *candidate {
 	return best
 }
 
-func calcScore(s *goquery.Selection, textLen int) float64 {
+func calcScore(s *goquery.Selection) float64 {
+	text := strings.TrimSpace(s.Text())
+	textLen := len(text)
+
 	score := float64(textLen) / 100.0
 
 	linksTextLen := 0
@@ -162,7 +168,7 @@ func calcScore(s *goquery.Selection, textLen int) float64 {
 	return score
 }
 
-func postProcessing(s *goquery.Selection) {
+func postProcess(s *goquery.Selection, baseURL *url.URL) {
 	s.Find("h4 + a[href*='.com']").Remove()
 	s.Find("a").Each(func(i int, a *goquery.Selection) {
 		href := a.AttrOr("href", "")
@@ -225,6 +231,7 @@ func postProcessing(s *goquery.Selection) {
 		firstImg.Remove()
 	}
 
+	fixImageSources(s, baseURL)
 	formatHTML(s)
 }
 
